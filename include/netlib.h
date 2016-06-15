@@ -1,5 +1,5 @@
-#ifndef __WORM_COMMON_H__
-#define __WORM_COMMON_H__
+#ifndef __NETLIB_H__
+#define __NETLIB_H__
 
 #include <arpa/inet.h>
 #include <dlfcn.h>
@@ -24,8 +24,6 @@
 #include <openssl/crypto.h>
 #include <openssl/err.h>
 
-#include <hptl.h>
-
 #define WH_COMMON_LIMITW8_RECV (1) //(1<<2) //Wait time in cycles if no more data retrived
 #define WH_COMMON_LIMITW8_SEND (1<<15) //Wait time in cycles if no more data retrived
 
@@ -46,26 +44,6 @@ extern "C" {
 	enum asyncSocketType {
 		SEND_SOCKET, RECV_SOCKET
 	};
-	enum ctrlMsgType {
-		HELLOEINSTEIN, STARTSSL, SETUP, QUERYID, RESPONSEID, PING, PONG, CHANGEROUTE, DOWNLINK, OVERLOAD, UNDERLOAD, CTRL_OK, CTRL_ERROR, HALT
-	};
-
-	typedef struct { //__attribute__(packet)??
-		uint16_t id;
-		uint16_t listenPort;
-		uint32_t IP; //TODO fix para ipv6
-		uint8_t isSSLNode;
-		uint8_t reservedFlag4; //Prevents valgrind unitialized errors. Is not used at all
-		uint8_t reservedFlag2; //Prevents valgrind unitialized errors. Is not used at all
-		uint8_t reservedFlag3; //Prevents valgrind unitialized errors. Is not used at all
-		uint32_t connectionDescriptionLength;
-		uint8_t *connectionDescription; // (LISP connection description)
-		int64_t core;
-	} WormSetup;
-
-	typedef struct {
-		uint16_t id;
-	} PongStats;
 
 	typedef struct {
 		int sockfd;

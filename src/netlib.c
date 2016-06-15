@@ -1,6 +1,5 @@
-#include <common.h>
-
-#include "async_inline.c"
+#include <netlib.h>
+#include "netlib_inline.c"
 
 size_t current_send_buf = 0;
 
