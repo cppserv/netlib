@@ -5,6 +5,10 @@ size_t current_send_buf = 0;
 
 uint32_t sslStarted = 0;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int tcp_connect_to(char *ip, uint16_t port)
 {
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -779,3 +783,7 @@ int asyncSocketStartSSL(AsyncSocket *socket, enum syncSocketType mode, SSL_CTX *
 
 	return ret;
 }
+
+#ifdef __cplusplus
+}
+#endif

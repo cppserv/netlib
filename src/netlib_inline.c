@@ -1,5 +1,8 @@
 #include <netlib.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 inline void flush_send(AsyncSocket *sock)
 {
@@ -21,6 +24,7 @@ inline void flush_send(AsyncSocket *sock)
 	sock->write_pos[sock->current_send_buf] = 0;
 	pthread_spin_unlock(&(sock->lock));
 }
+
 inline int can_be_read(AsyncSocket *s)
 {
 	int can_read = 0;
@@ -128,3 +132,7 @@ inline int tcp_message_recv_async(AsyncSocket *sock, void *message, size_t len)
 
 	return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif
