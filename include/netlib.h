@@ -162,7 +162,6 @@ extern "C" {
 	 */
 	int tcp_accept_async(int listen_socket, AsyncSocket *sock, struct timeval *timeout, enum syncSocketType mode, SSL_CTX *sslConfig);
 
-
 	int socket_upgrade_to_async_send(AsyncSocket *async_sock, int sockfd);
 	int socket_upgrade_to_async_recv(AsyncSocket *async_sock, int sockfd);
 
