@@ -11,25 +11,41 @@ extern "C" {
 
 	int tcp_connect_to(char *ip, uint16_t port)
 	{
-		int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+		int sockfd ;
 
-		if (sockfd == -1) {
-			return -1;
-		}
+		if(strchr(ip,':')) { // IPv6
+			sockfd = socket(AF_INET6, SOCK_STREAM, 0);
 
-		struct sockaddr_in cli_addr;
+			if (sockfd == -1) {
+				return -1;
+			}
 
-		bzero(&cli_addr, sizeof(cli_addr));
+			struct sockaddr_in6 cli_addr;
+			bzero(&cli_addr, sizeof(cli_addr));
+			cli_addr.sin6_family = AF_INET6;
+			cli_addr.sin6_port = htons(port);
+			inet_pton(AF_INET6,ip,&(cli_addr.sin6_addr));
+			if (connect(sockfd, (struct sockaddr *) &cli_addr, sizeof(cli_addr)) < 0) {
+				close(sockfd);
+				return -1;
+			}
 
-		cli_addr.sin_family = AF_INET;
+		} else { //IPv4
+			sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
-		cli_addr.sin_port = htons(port);
+			if (sockfd == -1) {
+				return -1;
+			}
 
-		cli_addr.sin_addr.s_addr = inet_addr(ip);
-
-		if (connect(sockfd, (struct sockaddr *) &cli_addr, sizeof(struct sockaddr_in)) < 0) {
-			close(sockfd);
-			return -1;
+			struct sockaddr_in cli_addr;
+			bzero(&cli_addr, sizeof(cli_addr));
+			cli_addr.sin_family = AF_INET;
+			cli_addr.sin_port = htons(port);
+			cli_addr.sin_addr.s_addr = inet_addr(ip);
+			if (connect(sockfd, (struct sockaddr *) &cli_addr, sizeof(cli_addr)) < 0) {
+				close(sockfd);
+				return -1;
+			}
 		}
 
 		return sockfd;
@@ -38,9 +54,8 @@ extern "C" {
 	int tcp_listen_on_port(uint16_t port)
 	{
 		int sockfd;
-		struct sockaddr_in serv_addr;
 
-		sockfd = socket(AF_INET, SOCK_STREAM, 0);
+		sockfd = socket(AF_INET6, SOCK_STREAM, 0);
 
 		if (sockfd == -1) {
 			perror("socket");
@@ -54,10 +69,11 @@ extern "C" {
 			return -1;
 		}
 
+		struct sockaddr_in6 serv_addr;
 		bzero((char *) &serv_addr, sizeof(serv_addr));
-		serv_addr.sin_family = AF_INET;
-		serv_addr.sin_port = htons(port);
-		serv_addr.sin_addr.s_addr = INADDR_ANY;
+		serv_addr.sin6_family = AF_INET6;
+		serv_addr.sin6_port = htons(port);
+		serv_addr.sin6_addr = in6addr_any;
 
 		if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) != 0) {
 			perror("bind");
@@ -87,8 +103,7 @@ extern "C" {
 			}
 		}
 
-		// TODO: Timeout
-		struct sockaddr_in cli_addr;
+		struct sockaddr_storage cli_addr;
 		socklen_t clilen = sizeof(cli_addr);
 		int newsockfd = accept(listen_socket, (struct sockaddr *) &cli_addr, &clilen);
 
