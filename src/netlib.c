@@ -13,7 +13,7 @@ extern "C" {
 	{
 		int sockfd ;
 
-		if(strchr(ip,':')) { // IPv6
+		if (strchr(ip, ':')) { // IPv6
 			sockfd = socket(AF_INET6, SOCK_STREAM, 0);
 
 			if (sockfd == -1) {
@@ -21,10 +21,15 @@ extern "C" {
 			}
 
 			struct sockaddr_in6 cli_addr;
+
 			bzero(&cli_addr, sizeof(cli_addr));
+
 			cli_addr.sin6_family = AF_INET6;
+
 			cli_addr.sin6_port = htons(port);
-			inet_pton(AF_INET6,ip,&(cli_addr.sin6_addr));
+
+			inet_pton(AF_INET6, ip, &(cli_addr.sin6_addr));
+
 			if (connect(sockfd, (struct sockaddr *) &cli_addr, sizeof(cli_addr)) < 0) {
 				close(sockfd);
 				return -1;
@@ -38,10 +43,15 @@ extern "C" {
 			}
 
 			struct sockaddr_in cli_addr;
+
 			bzero(&cli_addr, sizeof(cli_addr));
+
 			cli_addr.sin_family = AF_INET;
+
 			cli_addr.sin_port = htons(port);
+
 			cli_addr.sin_addr.s_addr = inet_addr(ip);
+
 			if (connect(sockfd, (struct sockaddr *) &cli_addr, sizeof(cli_addr)) < 0) {
 				close(sockfd);
 				return -1;
@@ -70,9 +80,13 @@ extern "C" {
 		}
 
 		struct sockaddr_in6 serv_addr;
+
 		bzero((char *) &serv_addr, sizeof(serv_addr));
+
 		serv_addr.sin6_family = AF_INET6;
+
 		serv_addr.sin6_port = htons(port);
+
 		serv_addr.sin6_addr = in6addr_any;
 
 		if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) != 0) {
@@ -104,7 +118,9 @@ extern "C" {
 		}
 
 		struct sockaddr_storage cli_addr;
+
 		socklen_t clilen = sizeof(cli_addr);
+
 		int newsockfd = accept(listen_socket, (struct sockaddr *) &cli_addr, &clilen);
 
 		return newsockfd;
@@ -209,16 +225,11 @@ extern "C" {
 
 			if (!config) {
 
-				if (mode == SRVSSL) {
-					ret->config = SSL_CTX_new(TLSv1_2_server_method());
-
-				} else {
-					ret->config = SSL_CTX_new(TLSv1_2_client_method());
-				}
+				ret->config = getDefaultSSocketSSLconfig(mode, 1);
 
 				if (ret->config == NULL) {
 					ERR_print_errors_fp(stderr);
-					fprintf(stderr, "[WH.COMMON]: SSL SSL_CTX_new error\n");
+					fprintf(stderr, "[NETLIB] [SSL]: SSL_CTX_new error\n");
 					exit(1);
 				}
 
@@ -228,47 +239,6 @@ extern "C" {
 
 			SSL_CTX_set_mode(ret->config, SSL_MODE_ENABLE_PARTIAL_WRITE);
 			SSL_CTX_set_mode(ret->config, SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
-
-			/*		if(!SSL_CTX_set_dh_auto(ret->config, 1)){
-						ERR_print_errors_fp(stderr);
-							return NULL;
-						}*/
-
-			if (!SSL_CTX_set_ecdh_auto(ret->config, 1)) {
-				ERR_print_errors_fp(stderr);
-				return NULL;
-			}
-
-			if (!config) {
-				if (!SSL_CTX_load_verify_locations(ret->config, "certs/ca.pem", NULL)) {
-					ERR_print_errors_fp(stderr);
-					return NULL;
-				}
-
-				if (!SSL_CTX_use_certificate_file(ret->config, "certs/worm.pem", SSL_FILETYPE_PEM)) {
-					ERR_print_errors_fp(stderr);
-					return NULL;
-				}
-
-				if (!SSL_CTX_use_PrivateKey_file(ret->config, "certs/prv/worm.key.pem", SSL_FILETYPE_PEM)) {
-					ERR_print_errors_fp(stderr);
-					return NULL;
-				}
-
-				/* verify private key */
-				if (!SSL_CTX_check_private_key(ret->config)) {
-					fprintf(stderr, "Private key does not match the public certificate\n");
-					return NULL;
-				}
-
-				if (!SSL_CTX_set_cipher_list(ret->config, ciphers)) {
-					fprintf(stderr, "No cipher could be selected\n");
-					return NULL;
-				}
-
-				SSL_CTX_set_verify(ret->config, SSL_VERIFY_PEER, NULL);
-				SSL_CTX_set_verify_depth(ret->config, 1);
-			}
 
 			ret->tls = SSL_new(ret->config);
 			SSL_set_fd(ret->tls, socket);
@@ -320,6 +290,62 @@ extern "C" {
 		return ret;
 	}
 
+	/** getDefaultSSocketSSLconfig
+	 * @return the default SSL config
+	 */
+	SSL_CTX *getDefaultSSocketSSLconfig(enum syncSocketType mode, int freeOnError)
+	{
+		SSL_CTX *ret;
+
+		if (mode == SRVSSL) {
+			ret = SSL_CTX_new(TLSv1_2_server_method());
+
+		} else {
+			ret = SSL_CTX_new(TLSv1_2_client_method());
+		}
+
+		if (!ret) {
+			return NULL;
+		}
+
+		if (!SSL_CTX_set_ecdh_auto(ret, 1) && freeOnError) {
+			ERR_print_errors_fp(stderr);
+			SSL_CTX_free(ret);
+			return NULL;
+		}
+
+		if (!SSL_CTX_load_verify_locations(ret, "certs/ca.pem", NULL) && freeOnError) {
+			ERR_print_errors_fp(stderr);
+			return NULL;
+		}
+
+		if (!SSL_CTX_use_certificate_file(ret, "certs/worm.pem", SSL_FILETYPE_PEM) && freeOnError) {
+			ERR_print_errors_fp(stderr);
+			return NULL;
+		}
+
+		if (!SSL_CTX_use_PrivateKey_file(ret, "certs/prv/worm.key.pem", SSL_FILETYPE_PEM) && freeOnError) {
+			ERR_print_errors_fp(stderr);
+			return NULL;
+		}
+
+		/* verify private key */
+		if (!SSL_CTX_check_private_key(ret) && freeOnError) {
+			fprintf(stderr, "Private key does not match the public certificate\n");
+			return NULL;
+		}
+
+		if (!SSL_CTX_set_cipher_list(ret, ciphers) && freeOnError) {
+			fprintf(stderr, "No cipher could be selected\n");
+			return NULL;
+		}
+
+		SSL_CTX_set_verify(ret, SSL_VERIFY_PEER, NULL);
+		SSL_CTX_set_verify_depth(ret, 1);
+
+		return ret;
+	}
+
 	/** tcp_message_ssend
 	 * Sends a full message to a socket
 	 * @return 0 if OK, something else if error.
@@ -334,7 +360,7 @@ extern "C" {
 			ssize_t sent_now;
 
 			do {
-				sent_now = SSL_write(socket->tls, (uint8_t*)message + sent, len - sent);
+				sent_now = SSL_write(socket->tls, (uint8_t *)message + sent, len - sent);
 
 				if (sent_now > 0) {
 					sent += sent_now;
@@ -362,7 +388,7 @@ extern "C" {
 			ssize_t received_now;
 
 			do {
-				received_now = SSL_read(socket->tls, (uint8_t*)message + received, len - received);
+				received_now = SSL_read(socket->tls, (uint8_t *)message + received, len - received);
 
 				if (received_now > 0) {
 					received += received_now;
@@ -578,13 +604,13 @@ extern "C" {
 		sock->finish = 0;
 		sock->closed = 0;
 
-		sock->buff[0] = (uint8_t*)malloc(sizeof(uint8_t) * buf_len);
+		sock->buff[0] = (uint8_t *)malloc(sizeof(uint8_t) * buf_len);
 
 		if (!sock->buff[0]) {
 			return 1;
 		}
 
-		sock->buff[1] = (uint8_t*)malloc(sizeof(uint8_t) * buf_len);
+		sock->buff[1] = (uint8_t *)malloc(sizeof(uint8_t) * buf_len);
 
 		if (!sock->buff[1]) {
 			free(sock->buff[0]);

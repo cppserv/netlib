@@ -41,7 +41,7 @@ extern "C" {
 	enum syncSocketType {
 		NOSSL, SRVSSL, CLISSL
 	};
-	
+
 	enum asyncSocketType {
 		SEND_SOCKET, RECV_SOCKET
 	};
@@ -142,6 +142,12 @@ extern "C" {
 	 * @return 0 if ssl has successfully started or 1 if not.
 	 */
 	int syncSocketStartSSL(SyncSocket *socket, enum syncSocketType mode, SSL_CTX *sslConfig);
+
+	/** getDefaultSSocketSSLconfig
+	 * The param "freeOnError", would stop and free everything on error.
+	 * @return the default SSL config
+	 */
+	SSL_CTX *getDefaultSSocketSSLconfig(enum syncSocketType mode, int freeOnError);
 
 	/** asyncSocketStartSSL
 	 * Changes the syncsocketMode in order to start a SSL session.

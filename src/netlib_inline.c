@@ -113,7 +113,7 @@ extern "C" {
 				to_read = available_in_socket;
 			}
 
-			memcpy((uint8_t*)message + position_in_message, sock->buff[sock->current_recv_buf] + sock->read_pos[sock->current_recv_buf], to_read);
+			memcpy((uint8_t *)message + position_in_message, sock->buff[sock->current_recv_buf] + sock->read_pos[sock->current_recv_buf], to_read);
 			position_in_message += to_read;
 			sock->read_pos[sock->current_recv_buf] += to_read;
 
