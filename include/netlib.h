@@ -41,6 +41,7 @@ extern "C" {
 	enum syncSocketType {
 		NOSSL, SRVSSL, CLISSL
 	};
+	
 	enum asyncSocketType {
 		SEND_SOCKET, RECV_SOCKET
 	};
@@ -72,13 +73,13 @@ extern "C" {
 	} AsyncSocket;
 
 	/** tcp_connect_to
-	 * Connects to a host using TCP over IPv4
+	 * Connects to a host using TCP over IPv4/v6
 	 * @return -1 if ERROR, else the socket file descriptor.
 	 */
 	int tcp_connect_to(char *ip, uint16_t port);
 
 	/** tcp_listen_on_port
-	 * Starts listening in a socket using TCP over IPv4
+	 * Starts listening in a socket using TCP over IPv4/v6
 	 * @return -1 if ERROR, else the socket file descriptor.
 	 */
 	int tcp_listen_on_port(uint16_t port);

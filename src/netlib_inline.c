@@ -50,7 +50,7 @@ extern "C" {
 		*/
 	inline int tcp_message_send_async(AsyncSocket *sock, const void *message, size_t len)
 	{
-		void *msgptr = (void *)message;
+		uint8_t *msgptr = (uint8_t *)message;
 
 		pthread_spin_lock(&(sock->lock));
 
@@ -113,10 +113,9 @@ extern "C" {
 				to_read = available_in_socket;
 			}
 
-			memcpy(message + position_in_message, sock->buff[sock->current_recv_buf] + sock->read_pos[sock->current_recv_buf], to_read);
+			memcpy((uint8_t*)message + position_in_message, sock->buff[sock->current_recv_buf] + sock->read_pos[sock->current_recv_buf], to_read);
 			position_in_message += to_read;
 			sock->read_pos[sock->current_recv_buf] += to_read;
-
 
 			if (sock->read_pos[sock->current_recv_buf] == sock->write_pos[sock->current_recv_buf]) {
 				pthread_spin_lock(&(sock->lock));

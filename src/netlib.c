@@ -116,7 +116,7 @@ extern "C" {
 		ssize_t sent_now;
 
 		do {
-			sent_now = send(socket, message + sent, len - sent, MSG_NOSIGNAL);
+			sent_now = send(socket, (uint8_t *)message + sent, len - sent, MSG_NOSIGNAL);
 
 			if (sent_now > 0) {
 				sent += sent_now;
@@ -144,7 +144,7 @@ extern "C" {
 		ssize_t received_now;
 
 		do {
-			received_now = recv(socket, message + received, len - received, MSG_NOSIGNAL);
+			received_now = recv(socket, (uint8_t *)message + received, len - received, MSG_NOSIGNAL);
 
 			if (received_now > 0) {
 				received += received_now;
@@ -194,7 +194,7 @@ extern "C" {
 		 */
 	SyncSocket *tcp_upgrade2syncSocket(int socket, enum syncSocketType mode, SSL_CTX *config)
 	{
-		SyncSocket *ret = malloc(sizeof(SyncSocket));
+		SyncSocket *ret = (SyncSocket *)malloc(sizeof(SyncSocket));
 
 		if (!ret) {
 			return ret;
@@ -326,7 +326,7 @@ extern "C" {
 	 */
 	int tcp_message_ssend(SyncSocket *socket, const void *message, size_t len)
 	{
-		if (socket->config == NOSSL) {
+		if (socket->config == NULL) {
 			return tcp_message_send(socket->sockfd, message, len);
 
 		} else {
@@ -334,7 +334,7 @@ extern "C" {
 			ssize_t sent_now;
 
 			do {
-				sent_now = SSL_write(socket->tls, message + sent, len - sent);
+				sent_now = SSL_write(socket->tls, (uint8_t*)message + sent, len - sent);
 
 				if (sent_now > 0) {
 					sent += sent_now;
@@ -354,7 +354,7 @@ extern "C" {
 	 */
 	ssize_t tcp_message_srecv(SyncSocket *socket, void *message, size_t len, uint8_t sync)
 	{
-		if (socket->config == NOSSL) {
+		if (socket->config == NULL) {
 			return tcp_message_recv(socket->sockfd, message, len, sync);
 
 		} else {
@@ -362,7 +362,7 @@ extern "C" {
 			ssize_t received_now;
 
 			do {
-				received_now = SSL_read(socket->tls, message + received, len - received);
+				received_now = SSL_read(socket->tls, (uint8_t*)message + received, len - received);
 
 				if (received_now > 0) {
 					received += received_now;
@@ -578,13 +578,13 @@ extern "C" {
 		sock->finish = 0;
 		sock->closed = 0;
 
-		sock->buff[0] = malloc(sizeof(uint8_t) * buf_len);
+		sock->buff[0] = (uint8_t*)malloc(sizeof(uint8_t) * buf_len);
 
 		if (!sock->buff[0]) {
 			return 1;
 		}
 
-		sock->buff[1] = malloc(sizeof(uint8_t) * buf_len);
+		sock->buff[1] = (uint8_t*)malloc(sizeof(uint8_t) * buf_len);
 
 		if (!sock->buff[1]) {
 			free(sock->buff[0]);
