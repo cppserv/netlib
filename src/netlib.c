@@ -9,7 +9,7 @@ extern "C" {
 
 	uint32_t sslStarted = 0;
 
-	int tcp_connect_to(char *ip, uint16_t port)
+	int tcp_connect_to(const char *ip, uint16_t port)
 	{
 		int sockfd ;
 

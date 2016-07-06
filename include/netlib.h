@@ -76,7 +76,7 @@ extern "C" {
 	 * Connects to a host using TCP over IPv4/v6
 	 * @return -1 if ERROR, else the socket file descriptor.
 	 */
-	int tcp_connect_to(char *ip, uint16_t port);
+	int tcp_connect_to(const char *ip, uint16_t port);
 
 	/** tcp_listen_on_port
 	 * Starts listening in a socket using TCP over IPv4/v6
