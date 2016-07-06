@@ -36,6 +36,11 @@ class SSocket //Sync socket
 	SSocket *accept();
 	SSocket *accept(struct timeval *timeout);
 
+	//SSL_config : Every return, is this object
+	SSocket *setCA(string path);
+	SSocket *setCert(string path);
+	SSocket *setPrvKey(string path);
+
 	//recv and send functions have NO error check.
 	inline int send(const void *message, size_t len) {
 		return tcp_message_ssend(this->ss, message, len);

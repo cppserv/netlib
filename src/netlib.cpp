@@ -7,7 +7,7 @@ SSocket::SSocket(enum syncSocketType t)
 	this->type = t;
 	this->listening = false;
 
-	this->sslConfig = getDefaultSSocketSSLconfig(t, 0);
+	this->sslConfig = NULL;//getDefaultSSocketSSLconfig(t, 0);
 	this->ss = NULL;
 }
 
@@ -99,4 +99,38 @@ SSocket *SSocket::accept(struct timeval *timeout)
 	ret->sslConfig = sslConfig;
 
 	return ret;
+}
+
+/* SSL CONFIGs */
+SSocket *SSocket::setCA(string path)
+{
+	if (!sslConfig) {
+		this->sslConfig = getDefaultSSocketSSLconfig(this->type, 0);
+	}
+
+	SSL_CTX_load_verify_locations(this->sslConfig, path.c_str(), NULL);
+
+	return this;
+}
+
+SSocket *SSocket::setCert(string path)
+{
+	if (!sslConfig) {
+		this->sslConfig = getDefaultSSocketSSLconfig(this->type, 0);
+	}
+
+	SSL_CTX_use_certificate_file(this->sslConfig, path.c_str(), SSL_FILETYPE_PEM);
+
+	return this;
+}
+
+SSocket *SSocket::setPrvKey(string path)
+{
+	if (!sslConfig) {
+		this->sslConfig = getDefaultSSocketSSLconfig(this->type, 0);
+	}
+
+	SSL_CTX_use_PrivateKey_file(this->sslConfig, path.c_str(), SSL_FILETYPE_PEM);
+
+	return this;
 }
