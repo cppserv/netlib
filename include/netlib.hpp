@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <string>
 #include <stdexcept>
+#include <memory>
 
 using namespace std;
 
@@ -50,6 +51,15 @@ class SSocket //Sync socket
 		return tcp_message_srecv(this->ss, message, len, sync);
 	}
 
+	//getters/setters
+	inline int getFd(){
+		return this->ss->sockfd;
+	}
+
+	inline bool operator==( const int& rhs){ return this->getFd() == rhs; }
+
 };
+
+inline bool operator==(const unique_ptr<SSocket> &lhs, const int& rhs){ return lhs->getFd() == rhs; }
 
 #endif
