@@ -1,4 +1,4 @@
 compilation:
     script:
-        - git submodule update
+        - git submodule update --recursive --init || git submodule update --recursive
         - make
