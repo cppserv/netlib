@@ -597,8 +597,10 @@ extern "C" {
 
 	int init_asyncSocket(AsyncSocket *sock, size_t buf_len, async_fun_p async_fun)
 	{
-		if(!hptlStarted) //HPTL init
-			hptl_init(NULL);
+		if(!hptlStarted) {//HPTL init
+			hptl_config conf ={.precision=9,.clockspeed=0};
+			hptl_init(&conf);
+		}
 
 		sock->buf_len = buf_len;
 
