@@ -471,6 +471,7 @@ extern "C" {
 
 		for (;; current_buf = (current_buf + 1) & 1) { // equivalent to %2
 			int writing = 0;
+			int counter = 0;
 
 			// Wait until the buffer can be sent
 			do {
@@ -486,6 +487,15 @@ extern "C" {
 				} else if (sock->finish) {
 					pthread_spin_unlock(&(sock->lock));
 					return 0;
+				} else if (counter>=1024) { // >102.4us, shoud flush?
+					if(sock->write_pos[current_buf]==0) //check if there are some data
+						counter=0;
+					
+					pthread_spin_unlock(&(sock->lock));
+					flush_send(sock,0);
+					pthread_spin_lock(&(sock->lock));
+				} else {
+					counter++;
 				}
 
 				pthread_spin_unlock(&(sock->lock));
@@ -641,8 +651,8 @@ extern "C" {
 	void destroy_asyncSocket(AsyncSocket *sock)
 	{
 		if (sock->socket_type == SEND_SOCKET) {
-			flush_send(sock);
-			flush_send(sock);
+			flush_send(sock,1);
+			flush_send(sock,1);
 
 		} else {
 			flush_recv(sock);
