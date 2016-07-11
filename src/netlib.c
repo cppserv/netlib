@@ -5,8 +5,8 @@
 extern "C" {
 #endif
 
-	size_t current_send_buf = 0;
-
+	//Static Variables
+	uint_fast8_t hptlStarted=0;
 	uint32_t sslStarted = 0;
 
 	int tcp_connect_to(const char *ip, uint16_t port)
@@ -47,9 +47,7 @@ extern "C" {
 			bzero(&cli_addr, sizeof(cli_addr));
 
 			cli_addr.sin_family = AF_INET;
-
 			cli_addr.sin_port = htons(port);
-
 			cli_addr.sin_addr.s_addr = inet_addr(ip);
 
 			if (connect(sockfd, (struct sockaddr *) &cli_addr, sizeof(cli_addr)) < 0) {
@@ -468,15 +466,13 @@ extern "C" {
 		AsyncSocket *sock = (AsyncSocket *) args;
 
 		size_t current_buf = 0;
-		struct timespec ts = {.tv_sec=0, .tv_nsec=100};
 
 		for (;; current_buf = (current_buf + 1) & 1) { // equivalent to %2
 			int writing = 0;
-			struct timespec firstts={0,0};
+			hptl_t firstts=0;
 
 			// Wait until the buffer can be sent
 			do {
-				nanosleep(&ts, 0);
 				pthread_spin_lock(&(sock->lock));
 
 				if (sock->to_access[current_buf]) {
@@ -485,20 +481,21 @@ extern "C" {
 				} else if (sock->finish) {
 					pthread_spin_unlock(&(sock->lock));
 					return 0;
-				} else if (firstts.tv_sec==0) {
+				} else if (firstts==0) {
 					if(sock->write_pos[current_buf]!=0)
-						clock_gettime(CLOCK_REALTIME, &firstts);
+						firstts = hptl_get();
+					else 
+						hptl_waitns(100);
 				} else {
-					struct timespec tmpts={0,0};
-					clock_gettime(CLOCK_REALTIME, &tmpts);
-					uint64_t frst4 = firstts.tv_sec*1000000000ull;
-					uint64_t tmp64 = tmpts  .tv_sec*1000000000ull;
+					hptl_t tmpts=hptl_get();
 
-					if (frst4+800000 <= tmp64) { // ~ 8x Buffsize @~37Gbps
+					if (hptl_ntimestamp(firstts)+800000 <= hptl_ntimestamp(tmpts)) { // ~ 8x Buffsize @~37Gbps
 						pthread_spin_unlock(&(sock->lock));
-						flush_send(sock,0);
+						flush_send_async(sock);
 						pthread_spin_lock(&(sock->lock));
 					}
+					
+					hptl_waitns(50);
 				}
 
 				pthread_spin_unlock(&(sock->lock));
@@ -600,6 +597,9 @@ extern "C" {
 
 	int init_asyncSocket(AsyncSocket *sock, size_t buf_len, async_fun_p async_fun)
 	{
+		if(!hptlStarted) //HPTL init
+			hptl_init(NULL);
+
 		sock->buf_len = buf_len;
 
 		sock->read_pos[0] = 0;
@@ -654,8 +654,8 @@ extern "C" {
 	void destroy_asyncSocket(AsyncSocket *sock)
 	{
 		if (sock->socket_type == SEND_SOCKET) {
-			flush_send(sock,1);
-			flush_send(sock,1);
+			flush_send_sync(sock);
+			flush_send_sync(sock);
 
 		} else {
 			flush_recv(sock);

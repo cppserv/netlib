@@ -4,7 +4,14 @@
 extern "C" {
 #endif
 
-	inline void flush_send(AsyncSocket *sock, int sync)
+	inline void flush_send_async(AsyncSocket *sock)
+	{
+		sock->to_access[sock->current_send_buf] = 1;
+		sock->current_send_buf = (sock->current_send_buf + 1) % 2;
+		sock->write_pos[sock->current_send_buf] = 0;
+	}
+
+	inline void flush_send_sync(AsyncSocket *sock)
 	{
 		pthread_spin_lock(&(sock->lock));
 		sock->to_access[sock->current_send_buf] = 1;
@@ -12,7 +19,7 @@ extern "C" {
 		sock->current_send_buf = (sock->current_send_buf + 1) % 2;
 
 		// Wait until the buffer has been sent
-		while (sync && sock->to_access[sock->current_send_buf] && !sock->closed) {
+		while (sock->to_access[sock->current_send_buf] && !sock->closed) {
 			pthread_spin_unlock(&(sock->lock));
 			struct timespec ts;
 			ts.tv_sec = 0;
@@ -62,7 +69,7 @@ extern "C" {
 			sock->write_pos[sock->current_send_buf] = sock->buf_len;
 
 			pthread_spin_unlock(&(sock->lock));
-			flush_send(sock,1);
+			flush_send_sync(sock);
 			pthread_spin_lock(&(sock->lock));
 		}
 
