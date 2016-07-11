@@ -495,9 +495,7 @@ extern "C" {
 					hptl_t tmpts = hptl_get();
 
 					if (hptl_ntimestamp(firstts) + 1000000 <= hptl_ntimestamp(tmpts)) { // ~ 8x Buffsize @~37Gbps
-						pthread_spin_unlock(&(sock->lock));
 						flush_send_async(sock);
-						pthread_spin_lock(&(sock->lock));
 					}
 				}
 
