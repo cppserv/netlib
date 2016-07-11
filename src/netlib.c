@@ -468,16 +468,15 @@ extern "C" {
 		AsyncSocket *sock = (AsyncSocket *) args;
 
 		size_t current_buf = 0;
+		struct timespec ts = {.tv_sec=0, .tv_nsec=100};
 
 		for (;; current_buf = (current_buf + 1) & 1) { // equivalent to %2
 			int writing = 0;
-			int counter = 0;
+			struct timespec firstts={0,0};
+			struct timespec tmpts={0,0};
 
 			// Wait until the buffer can be sent
 			do {
-				struct timespec ts;
-				ts.tv_sec = 0;
-				ts.tv_nsec = 100;
 				nanosleep(&ts, 0);
 				pthread_spin_lock(&(sock->lock));
 
@@ -487,15 +486,19 @@ extern "C" {
 				} else if (sock->finish) {
 					pthread_spin_unlock(&(sock->lock));
 					return 0;
-				} else if (counter>=1024) { // >102.4us, shoud flush?
-					if(sock->write_pos[current_buf]==0) //check if there are some data
-						counter=0;
-					
-					pthread_spin_unlock(&(sock->lock));
-					flush_send(sock,0);
-					pthread_spin_lock(&(sock->lock));
+				} else if (firstts.tv_sec==0) {
+					if(sock->write_pos[current_buf]!=0)
+						clock_gettime(CLOCK_REALTIME, &firstts);
 				} else {
-					counter++;
+					clock_gettime(CLOCK_REALTIME, &tmpts);
+					uint64_t frst4 = firstts.tv_sec*1000000000ull;
+					uint64_t tmp64 = tmpts  .tv_sec*1000000000ull;
+
+					if (frst4+100000 <= tmp64) { // ~ Buffsize @~37Gbps
+						pthread_spin_unlock(&(sock->lock));
+						flush_send(sock,0);
+						pthread_spin_lock(&(sock->lock));
+					}
 				}
 
 				pthread_spin_unlock(&(sock->lock));
