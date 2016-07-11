@@ -1,3 +1,4 @@
 compilation:
     script:
+        - git submodule update
         - make
