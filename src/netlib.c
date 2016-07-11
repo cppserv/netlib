@@ -473,7 +473,6 @@ extern "C" {
 		for (;; current_buf = (current_buf + 1) & 1) { // equivalent to %2
 			int writing = 0;
 			struct timespec firstts={0,0};
-			struct timespec tmpts={0,0};
 
 			// Wait until the buffer can be sent
 			do {
@@ -490,11 +489,12 @@ extern "C" {
 					if(sock->write_pos[current_buf]!=0)
 						clock_gettime(CLOCK_REALTIME, &firstts);
 				} else {
+					struct timespec tmpts={0,0};
 					clock_gettime(CLOCK_REALTIME, &tmpts);
 					uint64_t frst4 = firstts.tv_sec*1000000000ull;
 					uint64_t tmp64 = tmpts  .tv_sec*1000000000ull;
 
-					if (frst4+100000 <= tmp64) { // ~ Buffsize @~37Gbps
+					if (frst4+800000 <= tmp64) { // ~ 8x Buffsize @~37Gbps
 						pthread_spin_unlock(&(sock->lock));
 						flush_send(sock,0);
 						pthread_spin_lock(&(sock->lock));
