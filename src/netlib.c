@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 	//Static Variables
-	uint_fast8_t hptlStarted=0;
+	uint_fast8_t hptlStarted = 0;
 	uint32_t sslStarted = 0;
 
 	int tcp_connect_to(const char *ip, uint16_t port)
@@ -47,7 +47,9 @@ extern "C" {
 			bzero(&cli_addr, sizeof(cli_addr));
 
 			cli_addr.sin_family = AF_INET;
+
 			cli_addr.sin_port = htons(port);
+
 			cli_addr.sin_addr.s_addr = inet_addr(ip);
 
 			if (connect(sockfd, (struct sockaddr *) &cli_addr, sizeof(cli_addr)) < 0) {
@@ -466,13 +468,15 @@ extern "C" {
 		AsyncSocket *sock = (AsyncSocket *) args;
 
 		size_t current_buf = 0;
+		struct timespec ts = {.tv_sec = 0, .tv_nsec = 100};
 
 		for (;; current_buf = (current_buf + 1) & 1) { // equivalent to %2
 			int writing = 0;
-			hptl_t firstts=0;
+			hptl_t firstts = 0;
 
 			// Wait until the buffer can be sent
 			do {
+				nanosleep(&ts, 0);
 				pthread_spin_lock(&(sock->lock));
 
 				if (sock->to_access[current_buf]) {
@@ -481,21 +485,20 @@ extern "C" {
 				} else if (sock->finish) {
 					pthread_spin_unlock(&(sock->lock));
 					return 0;
-				} else if (firstts==0) {
-					if(sock->write_pos[current_buf]!=0)
-						firstts = hptl_get();
-					else 
-						hptl_waitns(100);
-				} else {
-					hptl_t tmpts=hptl_get();
 
-					if (hptl_ntimestamp(firstts)+800000 <= hptl_ntimestamp(tmpts)) { // ~ 8x Buffsize @~37Gbps
+				} else if (firstts == 0) {
+					if (sock->write_pos[current_buf] != 0) {
+						firstts = hptl_get();
+					}
+
+				} else {
+					hptl_t tmpts = hptl_get();
+
+					if (hptl_ntimestamp(firstts) + 1000000 <= hptl_ntimestamp(tmpts)) { // ~ 8x Buffsize @~37Gbps
 						pthread_spin_unlock(&(sock->lock));
 						flush_send_async(sock);
 						pthread_spin_lock(&(sock->lock));
 					}
-					
-					hptl_waitns(50);
 				}
 
 				pthread_spin_unlock(&(sock->lock));
@@ -563,9 +566,7 @@ extern "C" {
 					// Wait until the buffer has been sent
 					while (sock->to_access[current_buf]) {
 						pthread_spin_unlock(&(sock->lock));
-						struct timespec ts;
-						ts.tv_sec = 0;
-						ts.tv_nsec = 100;
+						struct timespec ts = {.tv_sec = 0, .tv_nsec = 100};
 						nanosleep(&ts, 0);
 						pthread_spin_lock(&(sock->lock));
 					}
@@ -597,8 +598,8 @@ extern "C" {
 
 	int init_asyncSocket(AsyncSocket *sock, size_t buf_len, async_fun_p async_fun)
 	{
-		if(!hptlStarted) {//HPTL init
-			hptl_config conf ={.precision=9,.clockspeed=0};
+		if (!hptlStarted) { //HPTL init
+			hptl_config conf = {.precision = 9, .clockspeed = 0};
 			hptl_init(&conf);
 		}
 

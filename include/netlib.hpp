@@ -52,14 +52,19 @@ class SSocket //Sync socket
 	}
 
 	//getters/setters
-	inline int getFd(){
+	inline int getFd() {
 		return this->ss->sockfd;
 	}
 
-	inline bool operator==( const int& rhs){ return this->getFd() == rhs; }
+	inline bool operator==(const int &rhs) {
+		return this->getFd() == rhs;
+	}
 
 };
 
-inline bool operator==(const unique_ptr<SSocket> &lhs, const int& rhs){ return lhs->getFd() == rhs; }
+inline bool operator==(const unique_ptr<SSocket> &lhs, const int &rhs)
+{
+	return lhs->getFd() == rhs;
+}
 
 #endif
