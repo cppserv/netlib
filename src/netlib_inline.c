@@ -13,7 +13,7 @@ extern "C" {
 
 	inline void flush_send_sync(AsyncSocket *sock)
 	{
-		pthread_spin_lock(&(sock->lock));
+		//pthread_spin_lock(&(sock->lock));
 		sock->to_access[sock->current_send_buf] = 1;
 
 		sock->current_send_buf = (sock->current_send_buf + 1) % 2;
@@ -27,7 +27,7 @@ extern "C" {
 		}
 
 		sock->write_pos[sock->current_send_buf] = 0;
-		pthread_spin_unlock(&(sock->lock));
+		//pthread_spin_unlock(&(sock->lock));
 	}
 
 	inline int can_be_read(AsyncSocket *s)
@@ -66,9 +66,9 @@ extern "C" {
 
 			sock->write_pos[sock->current_send_buf] = sock->buf_len;
 
-			pthread_spin_unlock(&(sock->lock));
+			//pthread_spin_unlock(&(sock->lock));
 			flush_send_sync(sock);
-			pthread_spin_lock(&(sock->lock));
+			//pthread_spin_lock(&(sock->lock));
 		}
 
 		memcpy(sock->buff[sock->current_send_buf] + sock->write_pos[sock->current_send_buf], msgptr, len);
@@ -116,7 +116,10 @@ extern "C" {
 				to_read = available_in_socket;
 			}
 
-			memcpy((uint8_t *)message + position_in_message, sock->buff[sock->current_recv_buf] + sock->read_pos[sock->current_recv_buf], to_read);
+			memcpy(
+				(uint8_t *)message + position_in_message,
+				sock->buff[sock->current_recv_buf] + sock->read_pos[sock->current_recv_buf],
+				to_read);
 			position_in_message += to_read;
 			sock->read_pos[sock->current_recv_buf] += to_read;
 
