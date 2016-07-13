@@ -135,6 +135,13 @@ extern "C" {
 		return 0;
 	}
 
+	/** tcp_async_numbuf
+	 * @return the number of buffers available to read in the socket
+	 */
+	inline uint_fast8_t tcp_async_numbuf(AsyncSocket *sock)
+	{
+		return sock->to_access[0]+sock->to_access[1];
+	}
 
 	/** tcp_async_peakInt
 	 * looks at the beggining of the socket (without read) and returns its content
