@@ -21,9 +21,7 @@ extern "C" {
 		// Wait until the buffer has been sent
 		while (sock->to_access[sock->current_send_buf] && !sock->closed) {
 			pthread_spin_unlock(&(sock->lock));
-			struct timespec ts;
-			ts.tv_sec = 0;
-			ts.tv_nsec = 100;
+			struct timespec ts = {.tv_sec = 0, .tv_nsec = 100};
 			nanosleep(&ts, 0);
 			pthread_spin_lock(&(sock->lock));
 		}
@@ -90,9 +88,7 @@ extern "C" {
 
 		while (position_in_message < len) {
 			while (!sock->can_read) {
-				struct timespec ts;
-				ts.tv_sec = 0;
-				ts.tv_nsec = 100;
+				struct timespec ts = {.tv_sec = 0, .tv_nsec = 100};
 				nanosleep(&ts, 0);
 
 				pthread_spin_lock(&(sock->lock));

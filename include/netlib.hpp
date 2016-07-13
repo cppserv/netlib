@@ -37,6 +37,10 @@ class SSocket //Sync socket
 	SSocket *accept();
 	SSocket *accept(struct timeval *timeout);
 
+	//Configuration
+	void getSocketTimeout(struct timeval *timeout);
+	void setSocketTimeout(struct timeval *timeout);
+
 	//SSL_config : Every return, is this object
 	SSocket *setCA(string path);
 	SSocket *setCert(string path);
