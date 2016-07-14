@@ -210,6 +210,10 @@ extern "C" {
 		 */
 	SyncSocket *tcp_upgrade2syncSocket(int socket, enum syncSocketType mode, SSL_CTX *config)
 	{
+		if (socket < 0) { // check if the socket is valid
+			return NULL;
+		}
+
 		SyncSocket *ret = (SyncSocket *)malloc(sizeof(SyncSocket));
 
 		if (!ret) {
@@ -657,8 +661,8 @@ extern "C" {
 	void destroy_asyncSocket(AsyncSocket *sock)
 	{
 		if (sock->socket_type == SEND_SOCKET) {
-			flush_send_sync(sock,1);
-			flush_send_sync(sock,1);
+			flush_send_sync(sock, 1);
+			flush_send_sync(sock, 1);
 
 		} else {
 			flush_recv(sock);
@@ -679,7 +683,6 @@ extern "C" {
 		size_t buf_len = OPTIMAL_BUFFER_SIZE;
 		int sockfd = tcp_connect_to(ip, port);
 		sock->ssock = tcp_upgrade2syncSocket(sockfd, mode, sslConfig);
-
 
 		if (sock->ssock == NULL) {
 			return 1;

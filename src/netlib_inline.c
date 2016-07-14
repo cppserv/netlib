@@ -65,6 +65,10 @@ extern "C" {
 
 		pthread_spin_lock(&(sock->lock));
 
+		if (unlikely(sock->closed)) {
+			return -1;
+		}
+
 		while (unlikely(sock->buf_len - sock->write_pos[sock->current_send_buf] < len)) {
 			memcpy(sock->buff[sock->current_send_buf] + sock->write_pos[sock->current_send_buf], msgptr, sock->buf_len - sock->write_pos[sock->current_send_buf]);
 			msgptr += sock->buf_len - sock->write_pos[sock->current_send_buf];
@@ -73,7 +77,7 @@ extern "C" {
 			sock->write_pos[sock->current_send_buf] = sock->buf_len;
 
 			//pthread_spin_unlock(&(sock->lock));
-			flush_send_sync(sock,0);
+			flush_send_sync(sock, 0);
 			//pthread_spin_lock(&(sock->lock));
 		}
 
@@ -106,7 +110,6 @@ extern "C" {
 					pthread_spin_unlock(&(sock->lock));
 					return -1;
 				}
-
 
 				pthread_spin_unlock(&(sock->lock));
 			}
