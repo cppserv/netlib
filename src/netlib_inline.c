@@ -11,9 +11,12 @@ extern "C" {
 		sock->write_pos[sock->current_send_buf] = 0;
 	}
 
-	inline void flush_send_sync(AsyncSocket *sock)
+	inline void flush_send_sync(AsyncSocket *sock, int lock)
 	{
-		//pthread_spin_lock(&(sock->lock));
+		if (lock) {
+			pthread_spin_lock(&(sock->lock));
+		}
+
 		sock->to_access[sock->current_send_buf] = 1;
 
 		sock->current_send_buf = (sock->current_send_buf + 1) % 2;
@@ -27,7 +30,10 @@ extern "C" {
 		}
 
 		sock->write_pos[sock->current_send_buf] = 0;
-		//pthread_spin_unlock(&(sock->lock));
+
+		if (lock) {
+			pthread_spin_unlock(&(sock->lock));
+		}
 	}
 
 	inline int can_be_read(AsyncSocket *s)
@@ -67,7 +73,7 @@ extern "C" {
 			sock->write_pos[sock->current_send_buf] = sock->buf_len;
 
 			//pthread_spin_unlock(&(sock->lock));
-			flush_send_sync(sock);
+			flush_send_sync(sock,0);
 			//pthread_spin_lock(&(sock->lock));
 		}
 

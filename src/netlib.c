@@ -657,8 +657,8 @@ extern "C" {
 	void destroy_asyncSocket(AsyncSocket *sock)
 	{
 		if (sock->socket_type == SEND_SOCKET) {
-			flush_send_sync(sock);
-			flush_send_sync(sock);
+			flush_send_sync(sock,1);
+			flush_send_sync(sock,1);
 
 		} else {
 			flush_recv(sock);
