@@ -143,7 +143,7 @@ extern "C" {
 	 */
 	inline uint_fast8_t tcp_async_numbuf(AsyncSocket *sock)
 	{
-		return sock->to_access[0]+sock->to_access[1];
+		return sock->to_access[0] + sock->to_access[1];
 	}
 
 	/** tcp_async_peakInt

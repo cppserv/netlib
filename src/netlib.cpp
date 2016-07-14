@@ -109,24 +109,24 @@ void SSocket::getSocketTimeout(struct timeval *timeout)
 	}
 
 	if (getsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)timeout,
-					NULL) < 0) {
+				   NULL) < 0) {
 		throw runtime_error("Cant get socket timeout");
 	}
 }
 
 void SSocket::setSocketTimeout(struct timeval *timeout)
-{	
+{
 	if (!this->ss) {
 		throw runtime_error("Not connected");
 	}
 
 	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
-					sizeof(timeout)) < 0) {
+				   sizeof(timeout)) < 0) {
 		throw runtime_error("Cant set socket timeout");
 	}
 
 	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
-					sizeof(timeout)) < 0) {
+				   sizeof(timeout)) < 0) {
 		throw runtime_error("Cant set socket timeout");
 	}
 }

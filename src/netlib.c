@@ -472,10 +472,11 @@ extern "C" {
 
 		for (;; current_buf = (current_buf + 1) & 1) { // equivalent to %2
 			int writing = 0;
-			hptl_t firstts = 0;
 
 			// Wait until the buffer can be sent
 			do {
+				hptl_t firstts = 0;
+
 				nanosleep(&ts, 0);
 				pthread_spin_lock(&(sock->lock));
 
@@ -496,6 +497,7 @@ extern "C" {
 
 					if (hptl_ntimestamp(firstts) + 1000000 <= hptl_ntimestamp(tmpts)) { // ~ 8x Buffsize @~37Gbps
 						flush_send_async(sock);
+						firstts = 0;
 					}
 				}
 
