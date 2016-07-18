@@ -5,10 +5,10 @@ export CFLAGS=$(FLAGS) $(SSLCFLAGS) -std=gnu++11
 
 all: lib/libnetlib.so lib/netlib.o
 
-lib/libnetlib.so: src/netlib.c src/netlib.cpp src/netlib_inline.c include/netlib.h include/netlib.hpp src/hptl.c 
+lib/libnetlib.so: src/netlib.c src/netlib.cpp src/netlib_inline.c include/netlib.h include/netlib.hpp src/hptl.c
 	mkdir -p lib
 	$(CXX) $(CFLAGS) -shared -o $@ src/netlib.c src/netlib.cpp src/hptl.c
 
-lib/netlib.o: src/netlib.c src/netlib.cpp src/netlib_inline.c include/netlib.h include/netlib.hpp src/hptl.c 
+lib/netlib.o: src/netlib.c src/netlib.cpp src/netlib_inline.c include/netlib.h include/netlib.hpp src/hptl.c
 	mkdir -p lib
-	$(CXX) $(CFLAGS) -c -o $@ src/netlib.c src/netlib.cpp src/hptl.c
+	$(CXX) $(CFLAGS) -c src/netlib.c -include src/netlib.cpp -include src/hptl.c -o $@
