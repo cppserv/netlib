@@ -63,7 +63,9 @@ extern "C" {
 	{
 		uint8_t *msgptr = (uint8_t *)message;
 
-		pthread_spin_lock(&(sock->lock));
+		if (!sock->inTransaction) {
+			pthread_spin_lock(&(sock->lock));
+		}
 
 		if (unlikely(sock->closed)) {
 			return -1;
@@ -84,7 +86,10 @@ extern "C" {
 		memcpy(sock->buff[sock->current_send_buf] + sock->write_pos[sock->current_send_buf], msgptr, len);
 		sock->write_pos[sock->current_send_buf] += len;
 
-		pthread_spin_unlock(&(sock->lock));
+		if (!sock->inTransaction) {
+			pthread_spin_unlock(&(sock->lock));
+		}
+
 		return 0;
 	}
 

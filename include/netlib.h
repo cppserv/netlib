@@ -61,16 +61,17 @@ extern "C" {
 		size_t buf_len;
 		size_t read_pos[2];
 		size_t write_pos[2];
-		int to_access[2];
+		int_fast8_t to_access[2];
 		uint8_t *buff[2];
 		size_t current_send_buf;
 		size_t current_recv_buf;
-		int can_read;
 
 		enum asyncSocketType socket_type;
-		int finish;
-		int flush;
-		int closed;
+		int_fast8_t can_read;
+		int_fast8_t finish;
+		int_fast8_t flush;
+		int_fast8_t closed;
+		int_fast8_t inTransaction;
 		pthread_spinlock_t lock;
 		pthread_t thread;
 	} AsyncSocket;
@@ -171,6 +172,19 @@ extern "C" {
 	 * @return -1 if ERROR, else the socket file descriptor.
 	 */
 	int tcp_accept_async(int listen_socket, AsyncSocket *sock, struct timeval *timeout, enum syncSocketType mode, SSL_CTX *sslConfig);
+
+	/** tcp_async_startTransaction
+	 * Starts a transaction
+	 * Useful to reduce locks
+	 */
+	void tcp_async_startTransaction(AsyncSocket *sock);
+
+	/** tcp_async_stopTransaction
+	 * Stops a transaction
+	 * Useful to reduce locks
+	 */
+	void tcp_async_stopTransaction(AsyncSocket *sock);
+
 
 	int socket_upgrade_to_async_send(AsyncSocket *async_sock, int sockfd);
 	int socket_upgrade_to_async_recv(AsyncSocket *async_sock, int sockfd);

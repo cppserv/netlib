@@ -623,6 +623,7 @@ extern "C" {
 		sock->flush = 0;
 		sock->finish = 0;
 		sock->closed = 0;
+		sock->inTransaction = 0;
 
 		sock->buff[0] = (uint8_t *)malloc(sizeof(uint8_t) * buf_len);
 
@@ -715,6 +716,16 @@ extern "C" {
 
 		sock->socket_type = RECV_SOCKET;
 		return 0;
+	}
+
+	void tcp_async_startTransaction(AsyncSocket *sock)
+	{
+		sock->inTransaction = 1;
+	}
+
+	void tcp_async_stopTransaction(AsyncSocket *sock)
+	{
+		sock->inTransaction = 0;
 	}
 
 	int socket_upgrade_to_async_send(AsyncSocket *async_sock, int sockfd)
