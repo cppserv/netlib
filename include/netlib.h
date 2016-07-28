@@ -126,7 +126,7 @@ extern "C" {
 	 * @param socket The shocket itself
 	 * @param cnt The maximum number of keepalive probes TCP should send before dropping the connection.
 	 * @param idl The time (in seconds) the connection needs to remain idle before TCP starts sending keepalive probes.
-	 * @param intlv The time (in seconds) between individual keepalive probes. 
+	 * @param intlv The time (in seconds) between individual keepalive probes.
 	 * @return 0 if OK, something else if error.
 	 */
 	int tcp_setKeepAlive(const int socket, const int cnt, const int idl, const int intvl);
@@ -136,7 +136,7 @@ extern "C" {
 	 * @param socket The shocket itself
 	 * @param cnt The maximum number of keepalive probes TCP should send before dropping the connection.
 	 * @param idl The time (in seconds) the connection needs to remain idle before TCP starts sending keepalive probes.
-	 * @param intlv The time (in seconds) between individual keepalive probes. 
+	 * @param intlv The time (in seconds) between individual keepalive probes.
 	 * @return 0 if OK, something else if error (like keepAlive is disabled).
 	 */
 	int tcp_getKeepAlive(const int socket, int *cnt, int *idl, int *intvl);

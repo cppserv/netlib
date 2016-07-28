@@ -118,7 +118,7 @@ SSocket *SSocket::accept(struct timeval *timeout)
 
 	ret->ipAddr = string(clienthost);
 	ret->port   = atoi(clientservice);
-	
+
 #ifdef NL_DEBUG
 	cerr << "[NETLIB][DEBUG] Connection from " << ret->ipAddr << ":" << ret->port << endl;
 #endif
