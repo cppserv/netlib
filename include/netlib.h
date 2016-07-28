@@ -29,6 +29,8 @@
 
 #define UNUSED(x) (void)(x)
 
+#define NL_DEBUG //debug msgs
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -95,6 +97,12 @@ extern "C" {
 	 * @return -1 if ERROR, else the socket file descriptor.
 	 */
 	int tcp_accept(int listen_socket, struct timeval *timeout);
+
+	/** tcp_accept
+	 * Accepts a new connection from a listen socket
+	 * @return -1 if ERROR, else the socket file descriptor.
+	 */
+	int tcp_acceptext(int listen_socket, struct timeval *timeout, struct sockaddr_storage *st);
 
 	/** tcp_message_send
 	 * Sends a full message to a socket

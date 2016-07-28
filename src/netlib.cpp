@@ -9,6 +9,10 @@ SSocket::SSocket(enum syncSocketType t)
 
 	this->sslConfig = NULL;//getDefaultSSocketSSLconfig(t, 0);
 	this->ss = NULL;
+
+	//Unknown ipaddr
+	this->ipAddr = "::1";
+	this->port  = 0;
 }
 
 SSocket::~SSocket()
@@ -49,8 +53,10 @@ void SSocket::connect(string ip, uint16_t port)
 		throw runtime_error("Error upgrading socket");
 		this->ss = tmpss;
 	}
-}
 
+	this->ipAddr = ip;
+	this->port = port;
+}
 
 void SSocket::listen(uint16_t port)
 {
@@ -70,6 +76,8 @@ void SSocket::listen(uint16_t port)
 
 	this->listening = true;
 	this->listeningFd = fd;
+	this->ipAddr = "::";
+	this->port = port;
 }
 
 SSocket *SSocket::accept()
@@ -87,7 +95,9 @@ SSocket *SSocket::accept(struct timeval *timeout)
 		throw runtime_error("Not listening");
 	}
 
-	int  fd = tcp_accept(this->listeningFd, timeout);
+	struct sockaddr_storage st;
+
+	int  fd = tcp_acceptext(this->listeningFd, timeout, &st);
 
 	if (fd < 0) {
 		return NULL;
@@ -97,6 +107,21 @@ SSocket *SSocket::accept(struct timeval *timeout)
 	SSocket *ret = new SSocket(this->type);
 	ret->ss = tmpss;
 	ret->sslConfig = sslConfig;
+
+	//Get ip data
+	char clienthost   [NI_MAXHOST];
+	char clientservice[NI_MAXSERV];
+	getnameinfo((struct sockaddr *)&st, sizeof(st),
+				clienthost, sizeof(clienthost),
+				clientservice, sizeof(clientservice),
+				NI_NUMERICHOST);
+
+	ret->ipAddr = string(clienthost);
+	ret->port   = atoi(clientservice);
+	
+#ifdef NL_DEBUG
+	cerr << "[NETLIB][DEBUG] Connection from " << ret->ipAddr << ":" << ret->port << endl;
+#endif
 
 	return ret;
 }

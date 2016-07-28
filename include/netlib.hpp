@@ -23,6 +23,10 @@ class SSocket //Sync socket
 	bool listening;
 	int listeningFd;
 
+	//connection data
+	string ipAddr;
+	uint16_t port;
+
  protected:
 
  public:
@@ -58,6 +62,22 @@ class SSocket //Sync socket
 	//getters/setters
 	inline int getFd() {
 		return this->ss->sockfd;
+	}
+
+	inline string getRemoteIPAddr() { //TODO
+		return this->ipAddr;
+	}
+
+	inline int getRemotePort() { //TODO
+		return this->port;
+	}
+
+	inline string getLocalIPAddr() { //TODO
+		return this->ipAddr;
+	}
+
+	inline uint16_t getLocalPort() { //TODO
+		return this->port;
 	}
 
 	inline bool operator==(const int &rhs) {

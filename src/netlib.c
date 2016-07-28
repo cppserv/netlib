@@ -104,7 +104,7 @@ extern "C" {
 		return sockfd;
 	}
 
-	int tcp_accept(int listen_socket, struct timeval *timeout)
+	int tcp_acceptext(int listen_socket, struct timeval *timeout, struct sockaddr_storage *st)
 	{
 		//TIMEOUT
 		if (timeout) {
@@ -119,13 +119,18 @@ extern "C" {
 			}
 		}
 
-		struct sockaddr_storage cli_addr;
+		socklen_t clilen = sizeof(struct sockaddr_storage);
 
-		socklen_t clilen = sizeof(cli_addr);
-
-		int newsockfd = accept(listen_socket, (struct sockaddr *) &cli_addr, &clilen);
+		int newsockfd = accept(listen_socket, (struct sockaddr *) st, &clilen);
 
 		return newsockfd;
+	}
+
+	int tcp_accept(int listen_socket, struct timeval *timeout)
+	{
+		struct sockaddr_storage cli_addr;
+
+		return tcp_acceptext(listen_socket, timeout, &cli_addr);
 	}
 
 	int tcp_message_send(int socket, const void *message, size_t len)
@@ -284,7 +289,9 @@ extern "C" {
 				}
 			}
 
+#ifdef NL_DEBUG
 			fprintf(stderr, "Connection established with algorithm: %s\n", SSL_get_cipher_name(ret->tls));
+#endif
 
 		} else {
 			ret->tls = NULL;
