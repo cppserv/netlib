@@ -188,6 +188,73 @@ extern "C" {
 		return received;
 	}
 
+
+	/** tcp_setKeepAlive
+	 * Sets the keepalive params
+	 * @param socket The shocket itself
+	 * @param cnt The maximum number of keepalive probes TCP should send before dropping the connection.
+	 * @param idl The time (in seconds) the connection needs to remain idle before TCP starts sending keepalive probes.
+	 * @param intlv The time (in seconds) between individual keepalive probes. 
+	 * @return 0 if OK, something else if error.
+	 */
+	int tcp_setKeepAlive(const int socket, const int cnt, const int idl, const int intvl)
+	{
+		int optval = 1;
+  		socklen_t optlen = sizeof(int);
+		if(setsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen) < 0) {
+			return -1;
+		}
+		if(setsockopt(socket, SOL_TCP, TCP_KEEPCNT, &cnt, optlen) < 0) {
+			return -2;
+		}
+		if(setsockopt(socket, SOL_TCP, TCP_KEEPIDLE, &idl, optlen) < 0) {
+			return -3;
+		}
+		if(setsockopt(socket, SOL_TCP, TCP_KEEPINTVL, &intvl, optlen) < 0) {
+			return -4;
+		}
+		return 0;
+	}
+
+	/** tcp_getKeepAlive
+	 * Gets the keepalive params
+	 * @param socket The shocket itself
+	 * @param cnt The maximum number of keepalive probes TCP should send before dropping the connection.
+	 * @param idl The time (in seconds) the connection needs to remain idle before TCP starts sending keepalive probes.
+	 * @param intlv The time (in seconds) between individual keepalive probes. 
+	 * @return 0 if OK, something else if error (like keepAlive is disabled).
+	 */
+	int tcp_getKeepAlive(const int socket, int *cnt, int *idl, int *intvl)
+	{
+		int optval = 1;
+  		socklen_t optlen = sizeof(int);
+		if(getsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, &optval, &optlen) < 0) {
+			return -1;
+		}
+		if(optval==0){
+			return 1;
+		}
+		optlen = sizeof(int);
+		if(getsockopt(socket, SOL_TCP, TCP_KEEPCNT, cnt, &optlen) < 0) {
+			return -2;
+		}
+		optlen = sizeof(int);
+		if(getsockopt(socket, SOL_TCP, TCP_KEEPIDLE, idl, &optlen) < 0) {
+			return -3;
+		}
+		optlen = sizeof(int);
+		if(getsockopt(socket, SOL_TCP, TCP_KEEPINTVL, intvl, &optlen) < 0) {
+			return -4;
+		}
+		return 0;
+	}
+
+
+
+
+
+
+
 	const char *ciphers =
 		"ECDHE-RSA-AES256-GCM-SHA384"
 		":ECDHE-ECDSA-AES256-GCM-SHA384"

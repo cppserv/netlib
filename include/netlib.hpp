@@ -84,6 +84,33 @@ class SSocket //Sync socket
 		return this->getFd() == rhs;
 	}
 
+	/** setKeepAlive
+	 * Sets the keepalive params
+	 * @param socket The shocket itself
+	 * @param cnt The maximum number of keepalive probes TCP should send before dropping the connection.
+	 * @param idl The time (in seconds) the connection needs to remain idle before TCP starts sending keepalive probes.
+	 * @param intlv The time (in seconds) between individual keepalive probes. 
+	 * @return 0 if OK, something else if error.
+	 */
+	inline int setKeepAlive(int  cnt, int  idl, int  intvl)
+	{
+		return tcp_setKeepAlive(ss->sockfd, cnt, idl, intvl);
+	}
+
+	/** getKeepAlive
+	 * Gets the keepalive params
+	 * @param socket The shocket itself
+	 * @param cnt The maximum number of keepalive probes TCP should send before dropping the connection.
+	 * @param idl The time (in seconds) the connection needs to remain idle before TCP starts sending keepalive probes.
+	 * @param intlv The time (in seconds) between individual keepalive probes. 
+	 * @return 0 if OK, something else if error (like keepAlive is disabled).
+	 */
+	inline int getKeepAlive(int *cnt, int *idl, int *intvl)
+	{
+		return tcp_getKeepAlive(ss->sockfd, cnt, idl, intvl);
+	}
+
+
 };
 
 inline bool operator==(const unique_ptr<SSocket> &lhs, const int &rhs)
