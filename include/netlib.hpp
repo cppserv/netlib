@@ -31,7 +31,9 @@ class SSocket //Sync socket
 
  public:
 	SSocket(); //NO SSL
+	SSocket(int fd); //NO SSL with an alredy-open socket
 	SSocket(enum syncSocketType);
+	SSocket(int fd, enum syncSocketType); //an fd should be provided
 	~SSocket();
 
 	void connect(string ip, uint16_t port);

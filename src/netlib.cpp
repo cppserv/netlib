@@ -1,6 +1,7 @@
 #include <netlib.hpp>
 
 SSocket::SSocket() : SSocket(NOSSL) {}
+SSocket::SSocket(int fd) : SSocket(fd, NOSSL) {}
 
 SSocket::SSocket(enum syncSocketType t)
 {
@@ -13,6 +14,12 @@ SSocket::SSocket(enum syncSocketType t)
 	//Unknown ipaddr
 	this->ipAddr = "::1";
 	this->port  = 0;
+}
+
+SSocket::SSocket(int fd, enum syncSocketType t) : SSocket(t)
+{
+	//upgrade
+	this->ss = tcp_upgrade2syncSocket(fd, this->type, this->sslConfig);
 }
 
 SSocket::~SSocket()
