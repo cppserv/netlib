@@ -30,7 +30,7 @@
 
 #define UNUSED(x) (void)(x)
 
-#define NL_DEBUG //debug msgs
+//#define NL_DEBUG //debug msgs
 
 #ifdef __cplusplus
 extern "C" {
