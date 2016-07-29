@@ -55,7 +55,11 @@ class SSocket //Sync socket
 		return tcp_message_ssend(this->ss, message, len);
 	}
 
-	inline ssize_t recv(void *message, size_t len, uint8_t sync) {
+	inline ssize_t recv(void *message, size_t len) { //simple recv
+		return tcp_message_srecv(this->ss, message, len, 1);
+	}
+
+	inline ssize_t recv(void *message, size_t len, uint8_t sync) { //advanced recv
 		return tcp_message_srecv(this->ss, message, len, sync);
 	}
 
