@@ -1,7 +1,7 @@
 #ifndef __NETLIB_HPP__
 #define __NETLIB_HPP__
 
-#include <netlib.h>
+#include "netlib.h"
 //#include "../src/netlib_inline.c" // FOR ASYNCSOCKETS
 
 #include <iostream>
