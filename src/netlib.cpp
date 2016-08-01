@@ -196,3 +196,21 @@ SSocket *SSocket::setPrvKey(string path)
 
 	return this;
 }
+
+SSocket *SSocket::setVerify(bool verify)
+{
+	if (!sslConfig) {
+		this->sslConfig = getDefaultSSocketSSLconfig(this->type, 0);
+	}
+
+	if(verify)
+	{
+		SSL_CTX_set_verify(sslConfig, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, NULL);
+		SSL_CTX_set_verify_depth(sslConfig, 3);
+	} else {
+		SSL_CTX_set_verify(sslConfig, SSL_VERIFY_NONE, NULL);
+		SSL_CTX_set_verify_depth(sslConfig, 3);
+	}
+
+	return this;
+}

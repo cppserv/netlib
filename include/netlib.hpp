@@ -51,6 +51,7 @@ class SSocket //Sync socket
 	SSocket *setCA(string path);
 	SSocket *setCert(string path);
 	SSocket *setPrvKey(string path);
+	SSocket *setVerify(bool verify);
 
 	//recv and send functions have NO error check.
 	inline int send(const void *message, size_t len) {
