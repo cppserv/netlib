@@ -195,6 +195,7 @@ SSocket *SSocket::setCA(string path)
 	}
 
 	if (!SSL_CTX_load_verify_locations(this->sslConfig, path.c_str(), NULL)) {
+		ERR_print_errors_fp(stderr);
 		throw runtime_error("Failed to set CA");
 	}
 
@@ -208,6 +209,7 @@ SSocket *SSocket::setCert(string path)
 	}
 
 	if (!SSL_CTX_use_certificate_file(this->sslConfig, path.c_str(), SSL_FILETYPE_PEM)) {
+		ERR_print_errors_fp(stderr);
 		throw runtime_error("Failed to set Cert");
 	}
 
@@ -221,6 +223,7 @@ SSocket *SSocket::setPrvKey(string path)
 	}
 
 	if (!SSL_CTX_use_PrivateKey_file(this->sslConfig, path.c_str(), SSL_FILETYPE_PEM)) {
+		ERR_print_errors_fp(stderr);
 		throw runtime_error("Failed to set Cert.key");
 	}
 
