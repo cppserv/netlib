@@ -391,6 +391,12 @@ extern "C" {
 	{
 		SSL_CTX *ret;
 
+		if (!sslStarted) {
+			SSL_load_error_strings();
+			SSL_library_init();
+			sslStarted = 1;
+		}
+
 		if (mode == SRVSSL) {
 			ret = SSL_CTX_new(TLSv1_2_server_method());
 
