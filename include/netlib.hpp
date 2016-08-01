@@ -48,6 +48,8 @@ class SSocket //Sync socket
 	 * startTLS: You should only call those functions when the ssock
 	 * has been created from an alredy opened FD.
 	 * configuration should be set previusly or default configuration would be used.
+	 * The typical call would be:
+	 * setupTLS->setCA->setCert->setPrvKey->setVerify->startTLS
 	 */
 	SSocket *setupTLS(enum syncSocketType newtype);
 	void startTLS();
