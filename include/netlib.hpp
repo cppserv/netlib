@@ -31,10 +31,25 @@ class SSocket //Sync socket
 
  public:
 	SSocket(); //NO SSL
-	SSocket(int fd); //NO SSL with an alredy-open socket
+	SSocket(int fd); //NO SSL with an alredy-opened socket
 	SSocket(enum syncSocketType);
-	SSocket(int fd, enum syncSocketType); //an fd should be provided
+	SSocket(int fd, enum syncSocketType); //an fd should be provided. Default SSL conf would be used
 	~SSocket();
+
+	/* SSL_config : Every return, is this object
+	 * This config functions should be called before call connect or accept.
+	 */
+	SSocket *setCA(string path);
+	SSocket *setCert(string path);
+	SSocket *setPrvKey(string path);
+	SSocket *setVerify(bool verify);
+
+	/* Start TLS: You should only call this function when the ssock
+	 * has been created from an alredy opened FD. All the previous
+	 * configuration should be set previusly or default configuration would be used
+	 * @return 0 if OK, 1 if SSL error, 2 if already in SSL mode, 3 if not supported.
+	 */
+	uint32_t startTLS(enum syncSocketType newtype);
 
 	void connect(string ip, uint16_t port);
 	void listen(uint16_t port);
@@ -46,12 +61,6 @@ class SSocket //Sync socket
 	//Configuration
 	void getSocketTimeout(struct timeval *timeout);
 	void setSocketTimeout(struct timeval *timeout);
-
-	//SSL_config : Every return, is this object
-	SSocket *setCA(string path);
-	SSocket *setCert(string path);
-	SSocket *setPrvKey(string path);
-	SSocket *setVerify(bool verify);
 
 	//recv and send functions have NO error check.
 	inline int send(const void *message, size_t len) {

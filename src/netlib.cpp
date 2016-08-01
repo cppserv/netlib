@@ -133,6 +133,25 @@ SSocket *SSocket::accept(struct timeval *timeout)
 	return ret;
 }
 
+uint32_t SSocket::startTLS(enum syncSocketType newtype)
+{
+	if (newtype == NOSSL) {
+		return 3;
+	}
+
+	if (this->type != NOSSL) {
+		return 2;
+	}
+
+	uint32_t ret = syncSocketStartSSL(this->ss, newtype, this->sslConfig);
+
+	if (!ret) {
+		this->type = newtype;
+	}
+
+	return ret;
+}
+
 /* Configuration */
 void SSocket::getSocketTimeout(struct timeval *timeout)
 {
@@ -203,10 +222,10 @@ SSocket *SSocket::setVerify(bool verify)
 		this->sslConfig = getDefaultSSocketSSLconfig(this->type, 0);
 	}
 
-	if(verify)
-	{
+	if (verify) {
 		SSL_CTX_set_verify(sslConfig, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, NULL);
 		SSL_CTX_set_verify_depth(sslConfig, 3);
+
 	} else {
 		SSL_CTX_set_verify(sslConfig, SSL_VERIFY_NONE, NULL);
 		SSL_CTX_set_verify_depth(sslConfig, 3);
