@@ -44,12 +44,13 @@ class SSocket //Sync socket
 	SSocket *setPrvKey(string path);
 	SSocket *setVerify(bool verify);
 
-	/* Start TLS: You should only call this function when the ssock
-	 * has been created from an alredy opened FD. All the previous
-	 * configuration should be set previusly or default configuration would be used
-	 * @return 0 if OK, 1 if SSL error, 2 if already in SSL mode, 3 if not supported.
+	/* StartTLS and setupTLS: Are a couple of functions to upgrade a socket into SSock with SSL.
+	 * startTLS: You should only call those functions when the ssock
+	 * has been created from an alredy opened FD.
+	 * configuration should be set previusly or default configuration would be used.
 	 */
-	uint32_t startTLS(enum syncSocketType newtype);
+	SSocket *setupTLS(enum syncSocketType newtype);
+	void startTLS();
 
 	void connect(string ip, uint16_t port);
 	void listen(uint16_t port);

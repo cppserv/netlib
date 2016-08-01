@@ -133,23 +133,28 @@ SSocket *SSocket::accept(struct timeval *timeout)
 	return ret;
 }
 
-uint32_t SSocket::startTLS(enum syncSocketType newtype)
+SSocket *SSocket::setupTLS(enum syncSocketType newtype)
 {
 	if (newtype == NOSSL) {
-		return 3;
+		throw runtime_error("Can stop an SSL connection");
 	}
 
 	if (this->type != NOSSL) {
-		return 2;
+		throw runtime_error("This is alredy a SSL connection");
 	}
 
-	uint32_t ret = syncSocketStartSSL(this->ss, newtype, this->sslConfig);
+	this->type = newtype;
+
+	return this;
+}
+
+void SSocket::startTLS()
+{
+	uint32_t ret = syncSocketStartSSL(this->ss, this->type, this->sslConfig);
 
 	if (!ret) {
-		this->type = newtype;
+		throw runtime_error("Some error happend when converting into a SSL socket");
 	}
-
-	return ret;
 }
 
 /* Configuration */
