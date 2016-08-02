@@ -440,7 +440,7 @@ extern "C" {
 			return NULL;
 		}
 
-		SSL_CTX_set_verify(ret, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, NULL);
+		SSL_CTX_set_verify(ret, SSL_VERIFY_PEER, NULL);
 		SSL_CTX_set_verify_depth(ret, 3);
 
 		return ret;
