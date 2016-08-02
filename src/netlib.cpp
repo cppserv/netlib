@@ -178,6 +178,7 @@ void SSocket::getSocketTimeout(struct timeval *timeout)
 
 	if (getsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)timeout,
 				   NULL) < 0) {
+		perror("Get Timeout error");
 		throw runtime_error("Cant get socket timeout");
 	}
 }
@@ -190,13 +191,13 @@ void SSocket::setSocketTimeout(struct timeval *timeout)
 
 	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
 				   sizeof(timeout)) < 0) {
-		perror("timeout error");
+		perror("Set RECV timeout error");
 		throw runtime_error("Cant set socket timeout");
 	}
 
 	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
 				   sizeof(timeout)) < 0) {
-		perror("timeout error");
+		perror("Set SEND timeout error");
 		throw runtime_error("Cant set socket timeout");
 	}
 }
