@@ -58,8 +58,8 @@ void SSocket::connect(string ip, uint16_t port)
 	if (!tmpss) {
 		close(fd);
 		throw runtime_error("Error upgrading socket");
-		this->ss = tmpss;
 	}
+	this->ss = tmpss;
 
 	this->ipAddr = ip;
 	this->port = port;
