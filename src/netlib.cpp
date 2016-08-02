@@ -148,7 +148,9 @@ SSocket *SSocket::setupTLS(enum syncSocketType newtype)
 	return this;
 }
 
+extern "C" {
 extern const char *ciphers;
+}
 void SSocket::startTLS()
 {
 	/* verify private key */
