@@ -542,7 +542,7 @@ extern "C" {
 			if (newSocket) {
 				socket->config	= newSocket->config;
 				socket->tls		= newSocket->tls;
-				socket->sockfd  = newSocket->sockfd;
+				//socket->sockfd  = newSocket->sockfd;
 				//socket->tlsIO	= newSocket->tlsIO;
 				free(newSocket);
 				return 0;

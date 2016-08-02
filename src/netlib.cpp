@@ -164,7 +164,7 @@ void SSocket::startTLS()
 
 	uint32_t ret = syncSocketStartSSL(this->ss, this->type, this->sslConfig);
 
-	if (!ret) {
+	if (ret) {
 		throw runtime_error("Some error happend when converting into a SSL socket");
 	}
 }
