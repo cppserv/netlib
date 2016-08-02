@@ -172,12 +172,13 @@ void SSocket::startTLS()
 /* Configuration */
 void SSocket::getSocketTimeout(struct timeval *timeout)
 {
+	socklen_t optlen = sizeof(struct timeval);
 	if (!this->ss) {
 		throw runtime_error("Not connected");
 	}
 
 	if (getsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)timeout,
-				   NULL) < 0) {
+				   &optlen) < 0) {
 		perror("Get Timeout error");
 		throw runtime_error("Cant get socket timeout");
 	}
@@ -185,18 +186,19 @@ void SSocket::getSocketTimeout(struct timeval *timeout)
 
 void SSocket::setSocketTimeout(struct timeval *timeout)
 {
+	socklen_t optlen = sizeof(struct timeval);
 	if (!this->ss) {
 		throw runtime_error("Not connected");
 	}
 
 	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
-				   sizeof(timeout)) < 0) {
+				   optlen) < 0) {
 		perror("Set RECV timeout error");
 		throw runtime_error("Cant set socket timeout");
 	}
 
 	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
-				   sizeof(timeout)) < 0) {
+				   optlen) < 0) {
 		perror("Set SEND timeout error");
 		throw runtime_error("Cant set socket timeout");
 	}
