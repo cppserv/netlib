@@ -186,19 +186,19 @@ void SSocket::getSocketTimeout(struct timeval *timeout)
 
 void SSocket::setSocketTimeout(struct timeval *timeout)
 {
-	socklen_t optlen = sizeof(struct timeval);
 	if (!this->ss) {
 		throw runtime_error("Not connected");
 	}
 
 	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&timeout,
-				   optlen) < 0) {
+				   sizeof(struct timeval)) < 0) {
+		cerr << "Testing : " << this->ss->sockfd << endl;
 		perror("Set RECV timeout error");
 		throw runtime_error("Cant set socket timeout");
 	}
 
 	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_SNDTIMEO, (struct timeval *)&timeout,
-				   optlen) < 0) {
+				   sizeof(struct timeval)) < 0) {
 		perror("Set SEND timeout error");
 		throw runtime_error("Cant set socket timeout");
 	}
