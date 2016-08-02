@@ -148,8 +148,18 @@ SSocket *SSocket::setupTLS(enum syncSocketType newtype)
 	return this;
 }
 
+extern const char *ciphers;
 void SSocket::startTLS()
 {
+	/* verify private key */
+	if (!SSL_CTX_check_private_key(this->sslConfig)) {
+		throw runtime_error("Private key does not match the public certificate");
+	}
+
+	if (!SSL_CTX_set_cipher_list(this->sslConfig, ciphers)) {
+		throw runtime_error("No cipher could be selected");
+	}
+
 	uint32_t ret = syncSocketStartSSL(this->ss, this->type, this->sslConfig);
 
 	if (!ret) {
