@@ -177,7 +177,7 @@ void SSocket::getSocketTimeout(struct timeval *timeout)
 		throw runtime_error("Not connected");
 	}
 
-	if (getsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)timeout,
+	if (getsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)timeout,
 				   &optlen) < 0) {
 		perror("Get Timeout error");
 		throw runtime_error("Cant get socket timeout");
@@ -191,13 +191,13 @@ void SSocket::setSocketTimeout(struct timeval *timeout)
 		throw runtime_error("Not connected");
 	}
 
-	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
+	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&timeout,
 				   optlen) < 0) {
 		perror("Set RECV timeout error");
 		throw runtime_error("Cant set socket timeout");
 	}
 
-	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
+	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_SNDTIMEO, (struct timeval *)&timeout,
 				   optlen) < 0) {
 		perror("Set SEND timeout error");
 		throw runtime_error("Cant set socket timeout");
