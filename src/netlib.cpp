@@ -253,8 +253,8 @@ SSocket *SSocket::setVerify(bool verify)
 		SSL_CTX_set_verify_depth(sslConfig, 3);
 
 	} else {
+		SSL_CTX_set_verify_depth(sslConfig, 0);
 		SSL_CTX_set_verify(sslConfig, SSL_VERIFY_NONE, NULL);
-		SSL_CTX_set_verify_depth(sslConfig, 3);
 	}
 
 	return this;
