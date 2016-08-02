@@ -190,11 +190,13 @@ void SSocket::setSocketTimeout(struct timeval *timeout)
 
 	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
 				   sizeof(timeout)) < 0) {
+		perror("timeout error");
 		throw runtime_error("Cant set socket timeout");
 	}
 
 	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
 				   sizeof(timeout)) < 0) {
+		perror("timeout error");
 		throw runtime_error("Cant set socket timeout");
 	}
 }
