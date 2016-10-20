@@ -1,7 +1,7 @@
 #ifndef __NETLIB_HPP__
 #define __NETLIB_HPP__
 
-#include <netlib.h>
+#include "netlib.h"
 //#include "../src/netlib_inline.c" // FOR ASYNCSOCKETS
 
 #include <iostream>
@@ -31,8 +31,28 @@ class SSocket //Sync socket
 
  public:
 	SSocket(); //NO SSL
+	SSocket(int fd); //NO SSL with an alredy-opened socket
 	SSocket(enum syncSocketType);
+	SSocket(int fd, enum syncSocketType); //an fd should be provided. Default SSL conf would be used
 	~SSocket();
+
+	/* SSL_config : Every return, is this object
+	 * This config functions should be called before call connect or accept.
+	 */
+	SSocket *setCA(string path);
+	SSocket *setCert(string path);
+	SSocket *setPrvKey(string path);
+	SSocket *setVerify(bool verify);
+
+	/* StartTLS and setupTLS: Are a couple of functions to upgrade a socket into SSock with SSL.
+	 * startTLS: You should only call those functions when the ssock
+	 * has been created from an alredy opened FD.
+	 * configuration should be set previusly or default configuration would be used.
+	 * The typical call should be:
+	 * setupTLS->setCA->setCert->setPrvKey->setVerify->startTLS
+	 */
+	SSocket *setupTLS(enum syncSocketType newtype);
+	void startTLS();
 
 	void connect(string ip, uint16_t port);
 	void listen(uint16_t port);
@@ -45,17 +65,16 @@ class SSocket //Sync socket
 	void getSocketTimeout(struct timeval *timeout);
 	void setSocketTimeout(struct timeval *timeout);
 
-	//SSL_config : Every return, is this object
-	SSocket *setCA(string path);
-	SSocket *setCert(string path);
-	SSocket *setPrvKey(string path);
-
 	//recv and send functions have NO error check.
 	inline int send(const void *message, size_t len) {
 		return tcp_message_ssend(this->ss, message, len);
 	}
 
-	inline ssize_t recv(void *message, size_t len, uint8_t sync) {
+	inline ssize_t recv(void *message, size_t len) { //simple recv
+		return tcp_message_srecv(this->ss, message, len, 1);
+	}
+
+	inline ssize_t recv(void *message, size_t len, uint8_t sync) { //advanced recv
 		return tcp_message_srecv(this->ss, message, len, sync);
 	}
 

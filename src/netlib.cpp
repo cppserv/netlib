@@ -1,6 +1,7 @@
 #include <netlib.hpp>
 
 SSocket::SSocket() : SSocket(NOSSL) {}
+SSocket::SSocket(int fd) : SSocket(fd, NOSSL) {}
 
 SSocket::SSocket(enum syncSocketType t)
 {
@@ -13,6 +14,12 @@ SSocket::SSocket(enum syncSocketType t)
 	//Unknown ipaddr
 	this->ipAddr = "::1";
 	this->port  = 0;
+}
+
+SSocket::SSocket(int fd, enum syncSocketType t) : SSocket(t)
+{
+	//upgrade
+	this->ss = tcp_upgrade2syncSocket(fd, this->type, this->sslConfig);
 }
 
 SSocket::~SSocket()
@@ -51,8 +58,8 @@ void SSocket::connect(string ip, uint16_t port)
 	if (!tmpss) {
 		close(fd);
 		throw runtime_error("Error upgrading socket");
-		this->ss = tmpss;
 	}
+	this->ss = tmpss;
 
 	this->ipAddr = ip;
 	this->port = port;
@@ -126,15 +133,63 @@ SSocket *SSocket::accept(struct timeval *timeout)
 	return ret;
 }
 
+SSocket *SSocket::setupTLS(enum syncSocketType newtype)
+{
+	if (newtype == NOSSL) {
+		throw runtime_error("Can stop an SSL connection");
+	}
+
+	if (this->type != NOSSL) {
+		throw runtime_error("This is alredy a SSL connection");
+	}
+
+	this->type = newtype;
+
+	return this;
+}
+
+extern "C" {
+extern const char *ciphers;
+}
+void SSocket::startTLS()
+{
+	/* verify private key */
+	if (!SSL_CTX_check_private_key(this->sslConfig)) {
+		throw runtime_error("Private key does not match the public certificate");
+	}
+
+	if (!SSL_CTX_set_cipher_list(this->sslConfig, ciphers)) {
+		throw runtime_error("No cipher could be selected");
+	}
+
+	uint32_t ret = syncSocketStartSSL(this->ss, this->type, this->sslConfig);
+
+	if (ret) {
+		throw runtime_error("Some error happend when converting into a SSL socket");
+	}
+}
+
 /* Configuration */
 void SSocket::getSocketTimeout(struct timeval *timeout)
 {
+#ifdef WIN32
+	socklen_t optlen = sizeof(int);
+#else
+	socklen_t optlen = sizeof(struct timeval);
+#endif
 	if (!this->ss) {
 		throw runtime_error("Not connected");
 	}
 
-	if (getsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)timeout,
-				   NULL) < 0) {
+#ifdef WIN32
+	if (getsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)(&(timeout->tv_sec)),
+				   &optlen) < 0) {
+#else
+	if (getsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)timeout,
+				   &optlen) < 0) {
+#endif
+	
+		perror("Get Timeout error");
 		throw runtime_error("Cant get socket timeout");
 	}
 }
@@ -145,13 +200,27 @@ void SSocket::setSocketTimeout(struct timeval *timeout)
 		throw runtime_error("Not connected");
 	}
 
-	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
-				   sizeof(timeout)) < 0) {
+	
+#ifdef WIN32
+	int tmout = timeout->tv_sec;
+	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)(&tmout),
+				   sizeof(int)) < 0) {
+#else
+	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)timeout,
+				   sizeof(struct timeval)) < 0) {
+#endif
+		perror("Set RECV timeout error");
 		throw runtime_error("Cant set socket timeout");
 	}
 
-	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
-				   sizeof(timeout)) < 0) {
+#ifdef WIN32
+	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)(&tmout),
+				   sizeof(int)) < 0) {
+#else
+	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_SNDTIMEO, (struct timeval *)timeout,
+				   sizeof(struct timeval)) < 0) {
+#endif
+		perror("Set SEND timeout error");
 		throw runtime_error("Cant set socket timeout");
 	}
 }
@@ -163,7 +232,10 @@ SSocket *SSocket::setCA(string path)
 		this->sslConfig = getDefaultSSocketSSLconfig(this->type, 0);
 	}
 
-	SSL_CTX_load_verify_locations(this->sslConfig, path.c_str(), NULL);
+	if (!SSL_CTX_load_verify_locations(this->sslConfig, path.c_str(), NULL)) {
+		ERR_print_errors_fp(stderr);
+		throw runtime_error("Failed to set CA");
+	}
 
 	return this;
 }
@@ -174,7 +246,10 @@ SSocket *SSocket::setCert(string path)
 		this->sslConfig = getDefaultSSocketSSLconfig(this->type, 0);
 	}
 
-	SSL_CTX_use_certificate_file(this->sslConfig, path.c_str(), SSL_FILETYPE_PEM);
+	if (!SSL_CTX_use_certificate_file(this->sslConfig, path.c_str(), SSL_FILETYPE_PEM)) {
+		ERR_print_errors_fp(stderr);
+		throw runtime_error("Failed to set Cert");
+	}
 
 	return this;
 }
@@ -185,7 +260,28 @@ SSocket *SSocket::setPrvKey(string path)
 		this->sslConfig = getDefaultSSocketSSLconfig(this->type, 0);
 	}
 
-	SSL_CTX_use_PrivateKey_file(this->sslConfig, path.c_str(), SSL_FILETYPE_PEM);
+	if (!SSL_CTX_use_PrivateKey_file(this->sslConfig, path.c_str(), SSL_FILETYPE_PEM)) {
+		ERR_print_errors_fp(stderr);
+		throw runtime_error("Failed to set Cert.key");
+	}
+
+	return this;
+}
+
+SSocket *SSocket::setVerify(bool verify)
+{
+	if (!sslConfig) {
+		this->sslConfig = getDefaultSSocketSSLconfig(this->type, 0);
+	}
+
+	if (verify) {
+		SSL_CTX_set_verify(sslConfig, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, NULL);
+		SSL_CTX_set_verify_depth(sslConfig, 3);
+
+	} else {
+		SSL_CTX_set_verify_depth(sslConfig, 0);
+		SSL_CTX_set_verify(sslConfig, SSL_VERIFY_NONE, NULL);
+	}
 
 	return this;
 }
