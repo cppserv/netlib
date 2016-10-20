@@ -172,13 +172,23 @@ void SSocket::startTLS()
 /* Configuration */
 void SSocket::getSocketTimeout(struct timeval *timeout)
 {
+#ifdef WIN32
+	socklen_t optlen = sizeof(int);
+#else
 	socklen_t optlen = sizeof(struct timeval);
+#endif
 	if (!this->ss) {
 		throw runtime_error("Not connected");
 	}
 
+#ifdef WIN32
+	if (getsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)(&(timeout->tv_sec)),
+				   &optlen) < 0) {
+#else
 	if (getsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)timeout,
 				   &optlen) < 0) {
+#endif
+	
 		perror("Get Timeout error");
 		throw runtime_error("Cant get socket timeout");
 	}
@@ -190,14 +200,26 @@ void SSocket::setSocketTimeout(struct timeval *timeout)
 		throw runtime_error("Not connected");
 	}
 
+	
+#ifdef WIN32
+	int tmout = timeout->tv_sec;
+	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)(&tmout),
+				   sizeof(int)) < 0) {
+#else
 	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)timeout,
 				   sizeof(struct timeval)) < 0) {
+#endif
 		perror("Set RECV timeout error");
 		throw runtime_error("Cant set socket timeout");
 	}
 
+#ifdef WIN32
+	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)(&tmout),
+				   sizeof(int)) < 0) {
+#else
 	if (setsockopt(this->ss->sockfd, SOL_SOCKET, SO_SNDTIMEO, (struct timeval *)timeout,
 				   sizeof(struct timeval)) < 0) {
+#endif
 		perror("Set SEND timeout error");
 		throw runtime_error("Cant set socket timeout");
 	}

@@ -1,19 +1,33 @@
 #ifndef __NETLIB_H__
 #define __NETLIB_H__
 
+#ifdef WIN32
+
+#include <w32api.h>
+#define WINVER                  WindowsVista
+#define _WIN32_WINDOWS          WindowsVista
+#define _WIN32_WINNT            WindowsVista
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
+#else
+
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <dlfcn.h>
+
+#endif
+
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <netdb.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-#include <arpa/inet.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdlib.h>
