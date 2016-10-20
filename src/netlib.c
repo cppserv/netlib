@@ -14,10 +14,6 @@ extern "C" {
 
 	#define MSG_NOSIGNAL 0
 
-#else
-
-	#define IPPROTO_TCP 0
-
 #endif
 
 	uint32_t sslStarted = 0;
