@@ -2,7 +2,7 @@
 #define __NETLIB_H__
 
 #include <arpa/inet.h>
-#include <dlfcn.h>
+//#include <dlfcn.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
