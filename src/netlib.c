@@ -1,6 +1,7 @@
 #include <netlib.h>
 #include "netlib_inline.c"
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -576,6 +577,8 @@ extern "C" {
 	 * ASYNC LIB *
 	 ************/
 
+#ifndef _MSC_VER
+
 	typedef void *(*async_fun_p)(void *);
 
 
@@ -979,6 +982,8 @@ extern "C" {
 
 		return ret;
 	}
+
+#endif
 
 #ifdef __cplusplus
 }

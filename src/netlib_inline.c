@@ -4,6 +4,8 @@
 extern "C" {
 #endif
 
+#ifndef _MSC_VER
+
 	inline void flush_send_async(AsyncSocket *sock)
 	{
 		sock->to_access[sock->current_send_buf] = 1;
@@ -191,6 +193,8 @@ extern "C" {
 
 		return available_in_currbuf + available_in_otherbuf;
 	}
+
+#endif
 
 #ifdef __cplusplus
 }
