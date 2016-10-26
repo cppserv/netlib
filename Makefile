@@ -1,5 +1,5 @@
 export CC=g++
-export FLAGS=-fPIC -I include/ -Wall -Wextra -g -lpthread -pthread -O3 -Werror -DNL_NOHPTL
+export FLAGS=-fPIC -I include/ -Wall -Wextra -g -lpthread -pthread -O3 -Werror
 export CFLAGS=$(FLAGS)
 export CXXFLAGS=$(CFLAGS) -std=gnu++11
 export SSLCFLAGS=$(CXXFLAGS) -L/home/rafael/git/wormhole/dependencies/compiled/libressl/usr/local/lib/ -lssl -lcrypto
@@ -7,11 +7,11 @@ export SSLCFLAGS=$(CXXFLAGS) -L/home/rafael/git/wormhole/dependencies/compiled/l
 all: lib/libnetlib.so lib/netlib.o #examples
 examples: bin/cli bin/srv
 
-lib/libnetlib.so: src/netlib.c src/netlibpp.cpp src/netlib_inline.c include/netlib.h include/netlibpp.hpp src/hptl.c
+lib/libnetlib.so: src/netlib.c src/netlibpp.cpp src/netlib_inline.c include/netlib.h include/netlib.hpp src/hptl.c
 	mkdir -p lib
 	$(CXX) $(CXXFLAGS) -shared -o $@ src/netlib.c src/netlibpp.cpp src/hptl.c
 
-lib/netlib.o: src/netlib.c src/netlibpp.cpp src/netlib_inline.c include/netlib.h include/netlibpp.hpp src/hptl.c
+lib/netlib.o: src/netlib.c src/netlibpp.cpp src/netlib_inline.c include/netlib.h include/netlib.hpp src/hptl.c
 	mkdir -p lib
 	$(CXX) $(CXXFLAGS) -c src/netlib.c -include src/netlibpp.cpp -include src/hptl.c -o $@
 
