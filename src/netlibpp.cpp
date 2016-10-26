@@ -1,4 +1,4 @@
-#include <netlibpp.hpp>
+#include <netlib.hpp>
 
 SSocket::SSocket() : SSocket(NOSSL) {}
 SSocket::SSocket(int fd) : SSocket(fd, NOSSL) {}
