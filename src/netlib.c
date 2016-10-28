@@ -1,4 +1,6 @@
 #include <netlib.h>
+#include <mstcpip.h>
+
 #include "netlib_inline.c"
 
 
@@ -218,7 +220,16 @@ extern "C" {
 			return -1;
 		}
 
-	#ifndef WIN32	
+	#ifdef WIN32	
+		struct tcp_keepalive keepalive_conf;
+		keepalive_conf.onoff = 1;
+		keepalive_conf.keepalivetime = idl * 1000;
+		keepalive_conf.keepaliveinterval = intvl * 1000;
+
+		if (WSAIoctl(socket, SIO_KEEPALIVE_VALS, &keepalive_conf, sizeof(keepalive_conf), 0, 0, 0, 0, 0) != 0) {
+			return -2;
+		}
+	#else
 		if (setsockopt(socket, SOL_TCP, TCP_KEEPCNT, &cnt, optlen) < 0) {
 			return -2;
 		}
