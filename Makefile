@@ -2,7 +2,7 @@ export CC=gcc
 export CXX=g++
 export FLAGS=-fPIC -I include/ -Wall -Wextra -g -pthread -O3 -Werror -DNL_NOHPTL -I/usr/local/opt/openssl/include
 export CFLAGS=$(FLAGS) -std=gnu99
-export CXXFLAGS=$(CFLAGS) -std=gnu++11
+export CXXFLAGS=$(FLAGS) -std=gnu++11
 export LDFLAGS=-lpthread -L/home/rafael/git/wormhole/dependencies/compiled/libressl/usr/local/lib/ -lssl -lcrypto
 
 all: lib/libnetlib.so lib/netlib.o #examples
