@@ -1,5 +1,4 @@
 #include <netlib.h>
-#include <mstcpip.h>
 
 #include "netlib_inline.c"
 
@@ -15,6 +14,7 @@ extern "C" {
 
 #ifdef WIN32
 
+	#include <mstcpip.h>
 	#define MSG_NOSIGNAL 0
 
 #endif
@@ -220,7 +220,7 @@ extern "C" {
 			return -1;
 		}
 
-	#ifdef WIN32	
+	#if defined(WIN32)
 		struct tcp_keepalive keepalive_conf;
 		keepalive_conf.onoff = 1;
 		keepalive_conf.keepalivetime = idl * 1000;
@@ -229,6 +229,13 @@ extern "C" {
 		if (WSAIoctl(socket, SIO_KEEPALIVE_VALS, &keepalive_conf, sizeof(keepalive_conf), 0, 0, 0, 0, 0) != 0) {
 			return -2;
 		}
+	#elif defined(__APPLE__)
+		if (setsockopt(socket, IPPROTO_TCP, TCP_KEEPALIVE, &idl, sizeof(idl)) < 0) {
+			return -2;
+		}
+
+		(void)cnt;
+		(void)intvl;
 	#else
 		if (setsockopt(socket, SOL_TCP, TCP_KEEPCNT, &cnt, optlen) < 0) {
 			return -2;
@@ -269,7 +276,7 @@ extern "C" {
 
 		optlen = sizeof(int);
 
-	#ifndef WIN32	
+	#if !(defined(WIN32) || defined(__APPLE__))
 		if (getsockopt(socket, SOL_TCP, TCP_KEEPCNT, cnt, &optlen) < 0) {
 			return -2;
 		}
@@ -285,6 +292,10 @@ extern "C" {
 		if (getsockopt(socket, SOL_TCP, TCP_KEEPINTVL, intvl, &optlen) < 0) {
 			return -4;
 		}
+	#else
+		(void)cnt;
+		(void)idl;
+		(void)intvl;
 	#endif	
 
 		return 0;

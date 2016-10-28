@@ -1,6 +1,21 @@
 #ifndef __NETLIB_H__
 #define __NETLIB_H__
 
+#ifdef __APPLE__
+
+#define pthread_spinlock_t pthread_mutex_t
+
+#define pthread_spin_init pthread_mutex_init
+#define pthread_spin_destroy pthread_mutex_destroy
+
+#define pthread_spin_lock pthread_mutex_lock
+#define pthread_spin_unlock pthread_mutex_unlock
+#define pthread_spin_trylock pthread_mutex_trylock
+
+#define MSG_NOSIGNAL SO_NOSIGPIPE
+
+#endif
+
 #ifdef WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
