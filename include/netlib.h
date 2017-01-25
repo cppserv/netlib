@@ -1,29 +1,80 @@
 #ifndef __NETLIB_H__
 #define __NETLIB_H__
 
+#ifdef __APPLE__
+
+#define pthread_spinlock_t pthread_mutex_t
+
+#define pthread_spin_init pthread_mutex_init
+#define pthread_spin_destroy pthread_mutex_destroy
+
+#define pthread_spin_lock pthread_mutex_lock
+#define pthread_spin_unlock pthread_mutex_unlock
+#define pthread_spin_trylock pthread_mutex_trylock
+
+#define MSG_NOSIGNAL SO_NOSIGPIPE
+
+#endif
+
+#ifdef WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
+#include <winsock2.h>
+#include <windows.h>
+#include <ws2tcpip.h>
+#include <iphlpapi.h>
+
+#ifdef _MSC_VER
+
+#define close closesocket
+
+#endif
+
+
+#pragma comment(lib, "Ws2_32.lib")
+
+#else
+
 #include <arpa/inet.h>
-#include <dlfcn.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/time.h>
-#include <sys/types.h>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
+#include <dlfcn.h>
+
+#endif
+
+#ifndef _MSC_VER
+
+#include <unistd.h>
+#include <sys/time.h>
 #include <pthread.h>
+#include <strings.h>
+
+#endif
+
+#
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <time.h>
-#include <strings.h>
 #include <errno.h>
 
 #include <openssl/ssl.h>
 #include <openssl/crypto.h>
 #include <openssl/err.h>
+
+#ifdef _MSC_VER
+#include <basetsd.h>
+#define ssize_t SSIZE_T
+#endif
 
 #define WH_COMMON_LIMITW8_RECV (1) //(1<<2) //Wait time in cycles if no more data retrived
 #define WH_COMMON_LIMITW8_SEND (1<<15) //Wait time in cycles if no more data retrived
@@ -50,9 +101,13 @@ extern "C" {
 		NOSSL, SRVSSL, CLISSL
 	};
 
+#ifndef _MSC_VER
+
 	enum asyncSocketType {
 		SEND_SOCKET, RECV_SOCKET
 	};
+
+#endif
 
 	typedef struct {
 		int sockfd;
@@ -60,6 +115,8 @@ extern "C" {
 		//struct tls *tlsIO;
 		SSL_CTX *config;
 	} SyncSocket;
+
+#ifndef _MSC_VER
 
 	typedef struct {
 		SyncSocket *ssock;
@@ -80,6 +137,8 @@ extern "C" {
 		pthread_spinlock_t lock;
 		pthread_t thread;
 	} AsyncSocket;
+
+#endif
 
 	/** tcp_connect_to
 	 * Connects to a host using TCP over IPv4/v6
@@ -184,6 +243,8 @@ extern "C" {
 	 */
 	SSL_CTX *getDefaultSSocketSSLconfig(enum syncSocketType mode, int freeOnError);
 
+#ifndef _MSC_VER
+
 	/** asyncSocketStartSSL
 	 * Changes the syncsocketMode in order to start a SSL session.
 	 * IMPORTANT NOTE: All data must be flushed before call this function, or data-loss can happen.
@@ -226,6 +287,8 @@ extern "C" {
 	void destroy_asyncSocket(AsyncSocket *sock);
 
 	void flush_recv(AsyncSocket *sock);
+
+#endif
 
 #ifdef __cplusplus
 }

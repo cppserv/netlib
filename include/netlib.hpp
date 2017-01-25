@@ -1,15 +1,17 @@
 #ifndef __NETLIB_HPP__
 #define __NETLIB_HPP__
 
-#include "netlib.h"
-//#include "../src/netlib_inline.c" // FOR ASYNCSOCKETS
-
 #include <iostream>
 #include <vector>
 #include <cstdlib>
 #include <string>
 #include <stdexcept>
 #include <memory>
+
+extern "C" {
+#include "netlib.h"
+}
+//#include "../src/netlib_inline.c" // FOR ASYNCSOCKETS
 
 using namespace std;
 

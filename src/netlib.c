@@ -1,5 +1,7 @@
 #include <netlib.h>
+
 #include "netlib_inline.c"
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -9,6 +11,14 @@ extern "C" {
 #ifndef NL_NOHPTL
 	uint_fast8_t hptlStarted = 0;
 #endif
+
+#ifdef WIN32
+
+	#include <mstcpip.h>
+	#define MSG_NOSIGNAL 0
+
+#endif
+
 	uint32_t sslStarted = 0;
 
 	int tcp_connect_to(const char *ip, uint16_t port)
@@ -24,13 +34,17 @@ extern "C" {
 
 			struct sockaddr_in6 cli_addr;
 
-			bzero(&cli_addr, sizeof(cli_addr));
+			memset(&cli_addr, 0, sizeof(cli_addr));
 
 			cli_addr.sin6_family = AF_INET6;
 
 			cli_addr.sin6_port = htons(port);
 
+			#ifndef WIN32
 			inet_pton(AF_INET6, ip, &(cli_addr.sin6_addr));
+			#else
+			InetPton(AF_INET6, ip, &(cli_addr.sin6_addr));
+			#endif
 
 			if (connect(sockfd, (struct sockaddr *) &cli_addr, sizeof(cli_addr)) < 0) {
 				close(sockfd);
@@ -38,7 +52,7 @@ extern "C" {
 			}
 
 		} else { //IPv4
-			sockfd = socket(AF_INET, SOCK_STREAM, 0);
+			sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 			if (sockfd == -1) {
 				return -1;
@@ -46,7 +60,7 @@ extern "C" {
 
 			struct sockaddr_in cli_addr;
 
-			bzero(&cli_addr, sizeof(cli_addr));
+			memset(&cli_addr, 0, sizeof(cli_addr));
 
 			cli_addr.sin_family = AF_INET;
 
@@ -76,14 +90,14 @@ extern "C" {
 
 		int yes = 1;
 
-		if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
+		if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)(&yes), sizeof(yes)) == -1) {
 			perror("setsockopt");
 			return -1;
 		}
 
 		struct sockaddr_in6 serv_addr;
 
-		bzero((char *) &serv_addr, sizeof(serv_addr));
+		memset((char *) &serv_addr, 0, sizeof(serv_addr));
 
 		serv_addr.sin6_family = AF_INET6;
 
@@ -139,7 +153,7 @@ extern "C" {
 		ssize_t sent_now;
 
 		do {
-			sent_now = send(socket, (uint8_t *)message + sent, len - sent, MSG_NOSIGNAL);
+			sent_now = send(socket, (char *)message + sent, len - sent, MSG_NOSIGNAL);
 
 			if (sent_now > 0) {
 				sent += sent_now;
@@ -167,7 +181,7 @@ extern "C" {
 		ssize_t received_now;
 
 		do {
-			received_now = recv(socket, (uint8_t *)message + received, len - received, MSG_NOSIGNAL);
+			received_now = recv(socket, (char *)message + received, len - received, MSG_NOSIGNAL);
 
 			if (received_now > 0) {
 				received += received_now;
@@ -202,10 +216,27 @@ extern "C" {
 		int optval = 1;
 		socklen_t optlen = sizeof(int);
 
-		if (setsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen) < 0) {
+		if (setsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, (char *)(&optval), optlen) < 0) {
 			return -1;
 		}
 
+	#if defined(WIN32)
+		struct tcp_keepalive keepalive_conf;
+		keepalive_conf.onoff = 1;
+		keepalive_conf.keepalivetime = idl * 1000;
+		keepalive_conf.keepaliveinterval = intvl * 1000;
+
+		if (WSAIoctl(socket, SIO_KEEPALIVE_VALS, &keepalive_conf, sizeof(keepalive_conf), 0, 0, 0, 0, 0) != 0) {
+			return -2;
+		}
+	#elif defined(__APPLE__)
+		if (setsockopt(socket, IPPROTO_TCP, TCP_KEEPALIVE, &idl, sizeof(idl)) < 0) {
+			return -2;
+		}
+
+		(void)cnt;
+		(void)intvl;
+	#else
 		if (setsockopt(socket, SOL_TCP, TCP_KEEPCNT, &cnt, optlen) < 0) {
 			return -2;
 		}
@@ -217,6 +248,7 @@ extern "C" {
 		if (setsockopt(socket, SOL_TCP, TCP_KEEPINTVL, &intvl, optlen) < 0) {
 			return -4;
 		}
+	#endif	
 
 		return 0;
 	}
@@ -234,7 +266,7 @@ extern "C" {
 		int optval = 1;
 		socklen_t optlen = sizeof(int);
 
-		if (getsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, &optval, &optlen) < 0) {
+		if (getsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, (char *)(&optval), &optlen) < 0) {
 			return -1;
 		}
 
@@ -244,6 +276,7 @@ extern "C" {
 
 		optlen = sizeof(int);
 
+	#if !(defined(WIN32) || defined(__APPLE__))
 		if (getsockopt(socket, SOL_TCP, TCP_KEEPCNT, cnt, &optlen) < 0) {
 			return -2;
 		}
@@ -259,6 +292,11 @@ extern "C" {
 		if (getsockopt(socket, SOL_TCP, TCP_KEEPINTVL, intvl, &optlen) < 0) {
 			return -4;
 		}
+	#else
+		(void)cnt;
+		(void)idl;
+		(void)intvl;
+	#endif	
 
 		return 0;
 	}
@@ -560,6 +598,8 @@ extern "C" {
 	/************
 	 * ASYNC LIB *
 	 ************/
+
+#ifndef _MSC_VER
 
 	typedef void *(*async_fun_p)(void *);
 
@@ -964,6 +1004,8 @@ extern "C" {
 
 		return ret;
 	}
+
+#endif
 
 #ifdef __cplusplus
 }
