@@ -2,11 +2,11 @@
 
 int main()
 {
-    int lfd, afd;
+	int lfd, afd;
 
-    lfd = tcp_listen_on_port(5000);
-    
-    auto sslSock = std::unique_ptr<SSocket>(new SSocket(events[i].data.fd));
+	lfd = tcp_listen_on_port(5000);
 
-    return 0;
+	auto sslSock = std::unique_ptr<SSocket>(new SSocket(events[i].data.fd));
+
+	return 0;
 }

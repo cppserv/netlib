@@ -59,6 +59,7 @@ void SSocket::connect(string ip, uint16_t port)
 		close(fd);
 		throw runtime_error("Error upgrading socket");
 	}
+
 	this->ss = tmpss;
 
 	this->ipAddr = ip;
@@ -149,7 +150,7 @@ SSocket *SSocket::setupTLS(enum syncSocketType newtype)
 }
 
 extern "C" {
-extern const char *ciphers;
+	extern const char *ciphers;
 }
 void SSocket::startTLS()
 {
@@ -173,6 +174,7 @@ void SSocket::startTLS()
 void SSocket::getSocketTimeout(struct timeval *timeout)
 {
 	socklen_t optlen = sizeof(struct timeval);
+
 	if (!this->ss) {
 		throw runtime_error("Not connected");
 	}
