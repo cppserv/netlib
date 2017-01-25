@@ -503,7 +503,7 @@ extern "C" {
 				if (sent_now > 0) {
 					sent += sent_now;
 
-				} else if ((sent_now == 0 || sent_now == -1) && (errno == EPIPE || errno == ENOTCONN)) {
+				} else if ((sent_now == 0 || sent_now == -1) && (errno == EPIPE || errno == ENOTCONN || SSL_get_error(socket->tls,sent_now) == SSL_ERROR_ZERO_RETURN)) {
 					return -1;
 				}
 			} while (sent != (ssize_t)len && sent_now != -1 && sent_now != 0);
