@@ -1,5 +1,5 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-    "clang.cflags":   ["-Wall", "-Wextra", "-Werror", "-std=gnu11", "-I", "/home/rafael/git/wormhole/dependencies/repos/libressl/include", "-I", "/home/rafael/git/wormhole/dependencies/repos/netlib/include"],
-    "clang.cxxflags": ["-Wall", "-Wextra", "-Werror", "-std=gnu++11", "-I", "/home/rafael/git/wormhole/dependencies/repos/libressl/include", "-I", "/home/rafael/git/wormhole/dependencies/repos/netlib/include"]
+    "clang.cflags": ["-I", "${workspaceRoot}/include", "-I", "/${workspaceRoot}/../libressl/include", "-std=gnu11"],
+    "clang.cxxflags": ["-I", "${workspaceRoot}/include", "-I", "/${workspaceRoot}/../libressl/include", "-std=c++11"]
 }

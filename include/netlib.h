@@ -1,6 +1,8 @@
 #ifndef __NETLIB_H__
 #define __NETLIB_H__
 
+#include <netlib_config.h>
+
 #ifdef __APPLE__
 
 #define pthread_spinlock_t pthread_mutex_t
@@ -85,11 +87,6 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif
-
-//HPTL
-#ifndef NL_NOHPTL
-#include "hptl.h"
 #endif
 
 #define likely(x)    __builtin_expect (!!(x), 1)

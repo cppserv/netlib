@@ -38,6 +38,11 @@ class SSocket //Sync socket
 	SSocket(int fd, enum syncSocketType); //an fd should be provided. Default SSL conf would be used
 	~SSocket();
 
+	//Version
+	static string getVersion(){
+		return netlib_VERSION;
+	}
+
 	/* SSL_config : Every return, is this object
 	 * This config functions should be called before call connect or accept.
 	 */

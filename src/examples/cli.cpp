@@ -1,4 +1,4 @@
-#include "../include/netlibpp.hpp"
+#include <netlib.hpp>
 
 int main()
 {

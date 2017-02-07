@@ -8,9 +8,6 @@ extern "C" {
 #endif
 
 	//Static Variables
-#ifndef NL_NOHPTL
-	uint_fast8_t hptlStarted = 0;
-#endif
 
 #ifdef WIN32
 
@@ -616,10 +613,6 @@ extern "C" {
 
 			// Wait until the buffer can be sent
 			do {
-#ifndef NL_NOHPTL
-				hptl_t firstts = 0;
-#endif
-
 				nanosleep(&ts, 0);
 				pthread_spin_lock(&(sock->lock));
 
@@ -631,24 +624,6 @@ extern "C" {
 					return 0;
 
 				}
-
-#ifndef NL_NOHPTL
-
-				else if (firstts == 0) {
-					if (sock->write_pos[current_buf] != 0) {
-						firstts = hptl_get();
-					}
-
-				} else {
-					hptl_t tmpts = hptl_get();
-
-					if (hptl_ntimestamp(firstts) + 1000000 <= hptl_ntimestamp(tmpts)) { // ~ 8x Buffsize @~37Gbps
-						flush_send_async(sock);
-						firstts = 0;
-					}
-				}
-
-#endif
 
 				pthread_spin_unlock(&(sock->lock));
 			} while (!writing);
@@ -747,16 +722,6 @@ extern "C" {
 
 	int init_asyncSocket(AsyncSocket *sock, size_t buf_len, async_fun_p async_fun)
 	{
-
-#ifndef NL_NOHPTL
-
-		if (!hptlStarted) { //HPTL init
-			hptl_config conf = {.precision = 9, .clockspeed = 0};
-			hptl_init(&conf);
-		}
-
-#endif
-
 		sock->buf_len = buf_len;
 
 		sock->read_pos[0] = 0;
