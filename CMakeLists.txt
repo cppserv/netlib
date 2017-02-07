@@ -14,7 +14,7 @@ set (CMAKE_C_STANDARD 11)
 set (CMAKE_CXX_STANDARD 11)
 
 include_directories("include")
-add_definitions(-Wall -Wextra -Werror -O3 -g -pipe -flto -ffat-lto-objects)
+add_definitions(-Wall -Wextra -O3 -g -pipe -flto -ffat-lto-objects) #-Werror eliminado por problema con libressl
 
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto -O3 -g -pipe")
 SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flto -O3 -g -pipe")
@@ -65,6 +65,26 @@ file(GLOB lib_SRC
 
 include(Config.cmake)
 
+# Dependencies
+
+#save current path
+#set(CMAKE_SOURCE_DIR_BACKUP "${CMAKE_SOURCE_DIR}")
+#set(CMAKE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libressl" CACHE STRING "" FORCE )
+#set(CMAKE_MODULE_PATH_BACKUP "${CMAKE_MODULE_PATH}")
+#set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}/dependencies/libressl" CACHE STRING "" FORCE )
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libressl" ${CMAKE_MODULE_PATH})
+_message("${CMAKE_SOURCE_DIR}")
+_message("${CMAKE_MODULE_PATH}")
+
+set(NO_COMPILE_EXECUTABLES ON)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libressl)
+add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libressl dependencies/libressl/build)
+unset(NO_COMPILE_EXECUTABLES)
+
+#restore path
+#set(CMAKE_SOURCE_DIR "${CMAKE_SOURCE_DIR_BACKUP}" CACHE STRING "" FORCE)
+#set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH_BACKUP}" CACHE STRING "" FORCE)
+
 #The library objects
 
 # this is the "object library" target: compiles the sources only once
@@ -72,17 +92,23 @@ add_library(netlib_obj OBJECT ${lib_SRC} ${lib_INCLUDE})
 # shared libraries need PIC
 set_property(TARGET ${hptl_obj} PROPERTY POSITION_INDEPENDENT_CODE 1)
 # actual shared and static libraries built from the same object files
-add_library(netlib_shared SHARED $<TARGET_OBJECTS:netlib_obj>)
-add_library(netlib_static STATIC $<TARGET_OBJECTS:netlib_obj>)
+add_library(netlib-shared SHARED $<TARGET_OBJECTS:netlib_obj>)
+add_library(netlib STATIC $<TARGET_OBJECTS:netlib_obj>)
+
+#Renombrar netlib-shared
+set_target_properties(netlib-shared PROPERTIES
+        OUTPUT_NAME netlib
+        ARCHIVE_OUTPUT_NAME netlib)
+
 
 #Library Dependencies
-target_link_libraries(netlib_static rt pthread ssl crypto)
-target_link_libraries(netlib_static rt pthread ssl crypto)
+target_link_libraries(netlib rt pthread ssl crypto)
+target_link_libraries(netlib-shared rt pthread ssl-shared crypto-shared)
 
 #Tests
 add_executable(cli src/examples/cli)
 add_executable(srv src/examples/srv)
 
 #Link library executables
-target_link_libraries(cli netlib_static)
-target_link_libraries(srv netlib_static)
+target_link_libraries(cli netlib)
+target_link_libraries(srv netlib)

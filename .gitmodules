@@ -1,0 +1,3 @@
+[submodule "dependencies/portable"]
+	path = dependencies/libressl
+	url = https://github.com/libressl-portable/portable.git
