@@ -14,7 +14,9 @@ set (CMAKE_C_STANDARD 11)
 set (CMAKE_CXX_STANDARD 11)
 
 include_directories("include")
-add_definitions(-Wall -Wextra -O3 -g -pipe -flto -ffat-lto-objects) #-Werror eliminado por problema con libressl
+add_definitions(-O3 -g -pipe -flto -ffat-lto-objects) # -Wall -Wextra -Werror eliminado por problema con libressl
+
+set(WARNINGFLAGS "-Wall -Wextra -Werror")
 
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto -O3 -g -pipe")
 SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flto -O3 -g -pipe")
@@ -104,3 +106,6 @@ add_executable(srv src/examples/srv)
 #Link library executables
 target_link_libraries(cli netlib)
 target_link_libraries(srv netlib)
+
+#Library wall messages
+set_target_properties(netlib_obj PROPERTIES COMPILE_FLAGS "${WARNINGFLAGS}")
