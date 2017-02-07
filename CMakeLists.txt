@@ -67,23 +67,15 @@ include(Config.cmake)
 
 # Dependencies
 
-#save current path
-#set(CMAKE_SOURCE_DIR_BACKUP "${CMAKE_SOURCE_DIR}")
-#set(CMAKE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libressl" CACHE STRING "" FORCE )
-#set(CMAKE_MODULE_PATH_BACKUP "${CMAKE_MODULE_PATH}")
-#set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}/dependencies/libressl" CACHE STRING "" FORCE )
+#Libressl
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libressl" ${CMAKE_MODULE_PATH})
-_message("${CMAKE_SOURCE_DIR}")
-_message("${CMAKE_MODULE_PATH}")
+execute_process(COMMAND sh autogen.sh WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libressl")
 
 set(NO_COMPILE_EXECUTABLES ON)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libressl)
 add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libressl dependencies/libressl/build)
 unset(NO_COMPILE_EXECUTABLES)
 
-#restore path
-#set(CMAKE_SOURCE_DIR "${CMAKE_SOURCE_DIR_BACKUP}" CACHE STRING "" FORCE)
-#set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH_BACKUP}" CACHE STRING "" FORCE)
 
 #The library objects
 
