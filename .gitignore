@@ -156,3 +156,5 @@ bin/certs
 dependencies/compiled
 
 tests/performance/flink/bandwith/gentext
+
+include/netlib_config.h

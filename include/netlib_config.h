@@ -6,7 +6,7 @@
 #define HBC_str(a) #a
 
 //The current version
-#define netlib_VERSION_trash v0.6-2-gb6e116a
+#define netlib_VERSION_trash v0.6-3-gcd6937b
 
 #define netlib_VERSION HBC_xstr(netlib_VERSION_trash)
 
