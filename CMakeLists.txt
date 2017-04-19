@@ -4,6 +4,7 @@ project (HPCN_Network_Library)
 execute_process(
     COMMAND git describe --always --tags
     OUTPUT_VARIABLE netlib_VERSION)
+string(REGEX REPLACE "\n$" "" netlib_VERSION "${netlib_VERSION}")
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -74,12 +75,18 @@ include(Config.cmake)
 #Libressl
 
 # Check if genscript should be called
+    MESSAGE( STATUS "netlib_VERSION:         " ${netlib_VERSION} )
+    MESSAGE( STATUS "netlib_VERSION_CACHED:         " ${netlib_VERSION_CACHED} )
 if(NOT DEFINED netlib_VERSION_CACHED)
     set(EXECUTE_LIBRESSL_SH on)
-elseif(netlib_VERSION STREQUAL netlib_VERSION_CACHED)
+    MESSAGE( STATUS "need to compile libressl" )
+elseif(NOT (${netlib_VERSION} STREQUAL ${netlib_VERSION_CACHED}))
+    MESSAGE( STATUS "probably need to recompile libressl" )
     set(EXECUTE_LIBRESSL_SH on)
+else()
+    MESSAGE( STATUS "Not need to recompile libressl" )
 endif()
-set(netlib_VERSION_CACHED netlib_VERSION CACHE STRING "cached version of netlib. Used to recompile or not the libressl" FORCE)
+set(netlib_VERSION_CACHED ${netlib_VERSION} CACHE STRING "cached version of netlib. Used to recompile or not the libressl" FORCE)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libressl" ${CMAKE_MODULE_PATH})
 if (EXECUTE_LIBRESSL_SH)
