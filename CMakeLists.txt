@@ -116,8 +116,8 @@ set_target_properties(netlib-shared PROPERTIES
 
 
 #Library Dependencies
-target_link_libraries(netlib rt pthread ssl crypto)
-target_link_libraries(netlib-shared rt pthread ssl-shared crypto-shared)
+target_link_libraries(netlib pthread ssl crypto)
+target_link_libraries(netlib-shared pthread ssl-shared crypto-shared)
 
 #Tests
 add_executable(cli src/examples/cli)
