@@ -15,7 +15,7 @@ set (CMAKE_C_STANDARD 11)
 set (CMAKE_CXX_STANDARD 11)
 
 include_directories("include")
-add_definitions(-O3 -g -pipe -flto -ffat-lto-objects) # -Wall -Wextra -Werror eliminado por problema con libressl
+add_definitions(-O3 -g -pipe -flto) # -ffat-lto-objects) # -Wall -Wextra -Werror eliminado por problema con libressl
 
 set(WARNINGFLAGS "-Wall -Wextra -Werror")
 
@@ -95,6 +95,7 @@ endif()
 
 set(NO_COMPILE_EXECUTABLES ON)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libressl)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libressl/include)
 add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libressl dependencies/libressl/build)
 unset(NO_COMPILE_EXECUTABLES)
 
