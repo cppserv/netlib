@@ -15,7 +15,11 @@ set (CMAKE_C_STANDARD 11)
 set (CMAKE_CXX_STANDARD 11)
 
 include_directories("include")
-add_definitions(-O3 -g -pipe -flto) # -ffat-lto-objects) # -Wall -Wextra -Werror eliminado por problema con libressl
+add_definitions(-O3 -g -pipe) # -Wall -Wextra -Werror eliminado por problema con libressl
+
+if (NOT APPLE)
+    add_definitions(-flto -ffat-lto-objects) 
+endif()
 
 set(WARNINGFLAGS "-Wall -Wextra -Werror")
 
