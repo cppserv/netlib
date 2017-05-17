@@ -17,14 +17,15 @@ set (CMAKE_CXX_STANDARD 11)
 include_directories("include")
 add_definitions(-O3 -g -pipe) # -Wall -Wextra -Werror eliminado por problema con libressl
 
+set(WARNINGFLAGS "-Wall -Wextra -Werror")
+SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -O3 -g -pipe")
+SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -O3 -g -pipe")
+
 if (NOT APPLE)
     add_definitions(-flto -ffat-lto-objects) 
+    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
+    SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flto")
 endif()
-
-set(WARNINGFLAGS "-Wall -Wextra -Werror")
-
-SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto -O3 -g -pipe")
-SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flto -O3 -g -pipe")
 
 if (NOT NO_REDEFINEFUNTIONS)
     #Function to make output a bit more quiet
