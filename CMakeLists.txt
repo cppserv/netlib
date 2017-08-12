@@ -3,6 +3,7 @@ project (HPCN_Network_Library)
 # The version number.
 execute_process(
     COMMAND git describe --always --tags
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
     OUTPUT_VARIABLE netlib_VERSION)
 string(REGEX REPLACE "\n$" "" netlib_VERSION "${netlib_VERSION}")
 
