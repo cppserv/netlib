@@ -28,39 +28,8 @@ if (NOT APPLE)
     SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flto")
 endif()
 
-if (NOT NO_REDEFINEFUNTIONS)
-    #Function to make output a bit more quiet
-    function(message)
-        if (NOT MESSAGE_QUIET)
-            _message(${ARGN})
-        endif()
-    endfunction()
-
-    #Function to remove imported executables
-    function(add_executable)
-        if (NOT NO_COMPILE_EXECUTABLES)
-            _add_executable(${ARGN})
-        else()
-            _add_executable(${ARGN})
-            set_target_properties(${ARGV0} PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
-        endif()
-    endfunction()
-
-    #Function to remove custom targets
-    function(add_custom_target)
-        if (NOT NO_ADD_CUSTOM)
-            _add_custom_target(${ARGN})
-        else()
-        endif()
-    endfunction()
-
-    function(INSTALL)
-        if (NOT NO_COMPILE_EXECUTABLES)
-            _INSTALL(${ARGN})
-        else()
-        endif()
-    endfunction()
-endif()
+#include cmakeLimiter
+include(dependencies/cmakeLimiter/cmakeLimiter.cmake)
 
 #Import all .hpp
 file(GLOB lib_INCLUDE
@@ -99,12 +68,11 @@ if (EXECUTE_LIBRESSL_SH)
 execute_process(COMMAND sh autogen.sh WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libressl")
 endif()
 
-set(NO_COMPILE_EXECUTABLES ON)
+cmakelimiter_compile_executables(0)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libressl)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libressl/include)
 add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libressl dependencies/libressl/build)
-unset(NO_COMPILE_EXECUTABLES)
-
+cmakelimiter_compile_executables(1)
 
 #The library objects
 

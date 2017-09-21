@@ -1,3 +1,6 @@
 [submodule "dependencies/portable"]
 	path = dependencies/libressl
 	url = https://github.com/libressl-portable/portable.git
+[submodule "dependencies/cmake-includer"]
+	path = dependencies/cmakeLimiter
+	url = https://github.com/cppserv/cmake-includer.git
